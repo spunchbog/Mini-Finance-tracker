@@ -4,8 +4,21 @@
     --text-main: #1A1A1A;        /* Black for body text */
     --border: #E0D7C6;           /* Light gold gray for card borders */
 
-    /* FinTrack Functional Colors */
+    /* Traffic Light System Colors */
     --safe: #88D38C;             /* Cash green */
     --warning: #FFA81C;          /* orangy gold yellow */
-    --danger: #B71C1C;           /* red */
-}   
+    --danger: #CC1808;           /* red */
+}
+
+body {
+    background-color: var(--background-cream) !important;
+    color: var(--text-main);
+    min-height: 100vh;
+}
+.card {
+    background-color: #ffffff;
+    border: 1px solid var(--border) !important;
+    border-radius: 10px;
+    transition: transform 0.2s ease;
+}
+

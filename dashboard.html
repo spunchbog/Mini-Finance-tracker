@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>FinTrack Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 
 <body>
@@ -14,28 +15,27 @@
     </header>
 
     <div class="row">
-
         <div class="col-md-4">
-            <div class="card p-3 shadow">
-                <h6>Total Balance</h6>
+            <div class="card p-3 shadow border-0" style="border-left: 5px solid var(--border) !important;">
+                <h6 class="text-muted">Total Balance</h6>
                 <h3>RM 670</h3>
             </div>
         </div>
         
         <div class="col-md-4">
-            <div class="card p-3 shadow">
-                <h6>Total Income</h6>
-                <h3>RM 1,200</h3>
+            <div class="card p-3 shadow border-0" style="border-left: 5px solid var(--safe) !important;">
+                <h6 class="text-muted">Total Income</h6>
+                <h3 style="color: var(--safe);">RM 1,200</h3>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card p-3 shadow">
-                <h6>Total Expenses</h6>
-                <h3>RM 530</h3>
+            <div class="card p-3 shadow border-0" style="border-left: 5px solid var(--danger) !important;">
+                <h6 class="text-muted">Total Expenses</h6>
+                <h3 style="color: var(--danger);">RM 530</h3>
             </div>
         </div>
-    </div>    
+    </div>
 
     <div class="card p-3 mt-4">
         <h5>Spending Overview</h5>
