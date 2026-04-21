@@ -22,3 +22,39 @@ body {
     transition: transform 0.2s ease;
 }
 
+.sidebar {
+    background-color: #212529 !important; 
+    border-right: 1px solid var(--border);
+}
+
+.nav-link:hover {
+    background-color: rgb(255, 255, 255, 0.2);
+    color: var(--text-main) !important;
+    border-radius: 5px;
+}
+
+#wrapper {
+    position: relative;
+    width: 100%;
+}
+
+#sidebar-wrapper {
+    position: absolute; /* Floating over the content */
+    z-index: 999;       /* Stay on top of the cards */
+    height: 100vh;
+    width: 250px;
+    left: -250px;       /* Hide off-screen */
+    transition: left 0.3s ease; /* Slide using 'left' instead of margin */
+    background-color: #2D004F !important;
+    box-shadow: 5px 0 15px rgba(0,0,0,0.2); /* Adds a nice shadow over the main content */
+}
+
+#wrapper.toggled #sidebar-wrapper {
+    left: 0; 
+}
+
+#page-content-wrapper {
+    width: 100%;
+    padding-left: 0; /* Content doesn't move anymore */
+}
+

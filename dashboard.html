@@ -8,73 +8,85 @@
 </head>
 
 <body>
-<div class="container mt-4">
 
-    <header class="mb-4">
-        <h2>Dashboard</h2>
-    </header>
+<button class="btn btn-dark position-fixed m-3" id="menu-toggle" style="z-index: 1000;">☰</button>
 
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card p-3 shadow border-0" style="border-left: 5px solid var(--border) !important;">
-                <h6 class="text-muted">Total Balance</h6>
-                <h3>RM 670</h3>
-            </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="card p-3 shadow border-0" style="border-left: 5px solid var(--safe) !important;">
-                <h6 class="text-muted">Total Income</h6>
-                <h3 style="color: var(--safe);">RM 1,200</h3>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card p-3 shadow border-0" style="border-left: 5px solid var(--danger) !important;">
-                <h6 class="text-muted">Total Expenses</h6>
-                <h3 style="color: var(--danger);">RM 530</h3>
-            </div>
+<div id="wrapper"> 
+    <div id="sidebar-wrapper" class="p-3 text-white">
+        <h4>FinTrack</h4>
+        <hr>
+        <div class="list-group list-group-flush">
+            <a href="#" class="nav-link text-white py-3">Dashboard</a>
+            <a href="#" class="nav-link text-white py-3">Transactions</a>
         </div>
     </div>
 
-    <div class="card p-3 mt-4">
-        <h5>Spending Overview</h5>
+    <div id="page-content-wrapper" class="p-4">
+        <div class="container mt-5">
+            
+            <header class="mb-4">
+                <h2>Dashboard</h2>
+            </header>
 
-        <div style="height:300px; background:#f5f5f5;">
-            Chart
-        </div>
-    </div>
-    
-    <div class="card p-3 mt-4">
-        <h5>Recent Transactions</h5>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Description</th>
-                    <th>Amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>2026-01-01</td>
-                    <td>Grocery Shopping</td>
-                    <td>RM 150</td>
-                </tr>
-                <tr>
-                    <td>2026-01-01</td>
-                    <td>Salary</td>
-                    <td>RM 1,200</td>
-                </tr>
-                <tr>
-                    <td>2026-01-01</td>
-                    <td>Electricity Bill</td>
-                    <td>RM 80</td>
-                </tr>
-            </tbody>
-        </table>
-</div>
-</div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card p-3 shadow border-0" style="border-left: 5px solid var(--border) !important;">
+                        <h6 class="text-muted">Total Balance</h6>
+                        <h3>RM 670</h3>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card p-3 shadow border-0" style="border-left: 5px solid var(--safe) !important;">
+                        <h6 class="text-muted">Total Income</h6>
+                        <h3 style="color: var(--safe);">RM 1,200</h3>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card p-3 shadow border-0" style="border-left: 5px solid var(--danger) !important;">
+                        <h6 class="text-muted">Total Expenses</h6>
+                        <h3 style="color: var(--danger);">RM 530</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-3 mt-4">
+                <h5>Spending Overview</h5>
+                <div style="height:300px; background:#f5f5f5;">
+                    Chart
+                </div>
+            </div>
+            
+            <div class="card p-3 mt-4 border-0 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5>Recent Transactions</h5>
+                    <button class="btn btn-sm btn-outline-secondary">View All</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>2026-01-01</td>
+                                <td>Grocery Shopping</td>
+                                <td style="color: var(--danger);">- RM 150</td>
+                            </tr>
+                            </tbody>
+                    </table>
+                </div>
+            </div> </div> </div> </div> <script>
+    const menuToggle = document.getElementById('menu-toggle');
+    const wrapper = document.getElementById('wrapper');
+
+    menuToggle.addEventListener('click', () => {
+        wrapper.classList.toggle('toggled');
+    });
+</script>
 </body>
-
-</html>
