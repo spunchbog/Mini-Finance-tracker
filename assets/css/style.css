@@ -1,0 +1,11 @@
+:root {
+    /* Neutral UI Colors */
+    --background-cream: #FFFDF5; /* White */
+    --text-main: #1A1A1A;        /* Black for body text */
+    --border: #E0D7C6;           /* Light gold gray for card borders */
+
+    /* FinTrack Functional Colors */
+    --safe: #88D38C;             /* Cash green */
+    --warning: #FFA81C;          /* orangy gold yellow */
+    --danger: #B71C1C;           /* red */
+}   
