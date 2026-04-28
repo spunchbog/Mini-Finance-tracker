@@ -65,7 +65,7 @@ CREATE TABLE `transaction` (
 
 --
 -- Table structure for table `user`
---
+--//
 
 CREATE TABLE `user` (
   `user_id` int(11) NOT NULL,
