@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <form method='POST' action=''>
     <table border='0'>
         <tr>
-            <td>Username:</td>
+            <td>Email:</td>
             <td><input type='text' name='username' required></td>
         </tr>
         <tr>
