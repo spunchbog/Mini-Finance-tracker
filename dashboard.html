@@ -7,89 +7,101 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
 <body>
 
 <button class="btn btn-dark position-fixed m-3" id="menu-toggle" style="z-index: 1000;">☰</button>
 
-<div id="wrapper"> 
+<div id="wrapper" class="vh-100"> 
+    <!-- Sidebar -->
     <div id="sidebar-wrapper" class="p-3 text-white">
         <h4>FinTrack</h4>
         <hr>
         <div class="list-group list-group-flush">
             <a href="dashboard.html" class="nav-link text-white py-3 active-link">Dashboard</a>
-        
             <a href="transactions.html" class="nav-link text-white py-3">Transactions</a>
             <a href="#" class="nav-link text-white py-3">Budgets</a>
         </div>
     </div>
 
-    <div id="page-content-wrapper" class="p-4">
-        <div class="container mt-5">
-            
-            <header class="mb-4">
-                <h2>Dashboard</h2>
-            </header>
+    <!-- Main Content Area -->
+    <div id="page-content-wrapper" class="container-fluid vh-100 d-flex flex-column p-4" style="overflow: hidden;">
+        
+        <header class="mb-3" style="flex: 0 1 auto;">
+            <h2>Dashboard</h2>
+        </header>
 
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="card p-3 shadow border-0" style="border-left: 5px solid var(--border) !important;">
-                        <h6 class="text-muted">Total Balance</h6>
-                        <h3>RM 670</h3>
-                    </div>
+        <!-- Top Row: Metric Cards (Stays at the top) -->
+        <div class="row mb-3" style="flex: 0 1 auto;">
+            <div class="col-md-4">
+                <div class="card p-3 shadow-sm border-0" style="border-left: 5px solid var(--border) !important;">
+                    <h6 class="text-muted">Total Balance</h6>
+                    <h3>RM 670</h3>
                 </div>
-                
-                <div class="col-md-4">
-                    <div class="card p-3 shadow border-0" style="border-left: 5px solid var(--safe) !important;">
-                        <h6 class="text-muted">Total Income</h6>
-                        <h3 style="color: var(--safe);">RM 1,200</h3>
-                    </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-3 shadow-sm border-0" style="border-left: 5px solid var(--safe) !important;">
+                    <h6 class="text-muted">Total Income</h6>
+                    <h3 style="color: var(--safe);">RM 1,200</h3>
                 </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-3 shadow-sm border-0" style="border-left: 5px solid var(--danger) !important;">
+                    <h6 class="text-muted">Total Expenses</h6>
+                    <h3 style="color: var(--danger);">RM 530</h3>
+                </div>
+            </div>
+        </div>
 
-                <div class="col-md-4">
-                    <div class="card p-3 shadow border-0" style="border-left: 5px solid var(--danger) !important;">
-                        <h6 class="text-muted">Total Expenses</h6>
-                        <h3 style="color: var(--danger);">RM 530</h3>
+        <!-- Bottom Row: Split Screen (Fills the rest of the height) -->
+        <div class="row flex-grow-1" style="min-height: 0;">
+            <!-- Left Side: Two Charts stacked -->
+            <div class="col-md-5 d-flex flex-column" style="gap: 15px;">
+                <div class="card p-3 flex-grow-1 shadow-sm">
+                    <h6>Spending Overview</h6>
+                    <div style="position: relative; flex-grow: 1;">
+                        <canvas id="spendingChart"></canvas>
+                    </div>
+                </div>
+                <div class="card p-3 flex-grow-1 shadow-sm">
+                    <h6>Monthly Trend</h6>
+                    <div style="position: relative; flex-grow: 1;">
+                        <canvas id="trendChart"></canvas>
                     </div>
                 </div>
             </div>
-            <div class="card p-3 mt-4">
-                <h5>Spending Overview</h5>
-                <div style="position: relative; height:300px; width:100%;">
-                    <canvas id="spendingChart"></canvas>
-                </div>
-            </div>
-            <div class="card p-3 mt-4">
-                <h5>Monthly Spending Trend</h5>
-                <div style="height:300px;">
-                    <canvas id="trendChart"></canvas>
-                </div>
-            </div>
-            
-            <div class="card p-3 mt-4 border-0 shadow-sm">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5>Recent Transactions</h5>
-                    <button class="btn btn-sm btn-outline-secondary">View All</button>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Date</th>
-                                <th>Description</th>
-                                <th>Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>2026-01-01</td>
-                                <td>Grocery Shopping</td>
-                                <td style="color: var(--danger);">- RM 150</td>
-                            </tr>
+
+            <!-- Right Side: Recent Transactions Table -->
+            <div class="col-md-7 d-flex flex-column">
+                <div class="card p-3 shadow-sm h-100" style="overflow: hidden;">
+                    <h5 class="mb-3">Recent Transactions</h5>
+                    <div class="table-responsive" style="overflow-y: auto;">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>2026-04-20</td><td>Part-time Job</td><td style="color: var(--safe);">+ RM 1,200</td></tr>
+                                <tr><td>2026-04-21</td><td>Starbucks</td><td style="color: var(--danger);">- RM 25</td></tr>
+                                <tr><td>2026-04-21</td><td>Grocery</td><td style="color: var(--danger);">- RM 150</td></tr>
+                                <!-- Add more rows here to test the scroll -->
                             </tbody>
-                    </table>
+                        </table>
+                    </div>
                 </div>
-            </div> </div> </div> </div> 
+            </div>
+        </div>
+
+        <!-- Floating Button -->
+        <button class="btn btn-primary position-fixed shadow-lg" 
+                style="bottom: 20px; right: 20px; border-radius: 50px; padding: 12px 20px; background-color: var(--monarch-purple); border: none; z-index: 1050;">
+            + Add
+        </button>
+    </div> 
+</div>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const ctx = document.getElementById('spendingChart').getContext('2d');

@@ -20,6 +20,8 @@ body {
     border: 1px solid var(--border) !important;
     border-radius: 10px;
     transition: transform 0.2s ease;
+    height: 100%;
+    margin-bottom: 0 !important;
 }
 
 .sidebar {
@@ -54,3 +56,13 @@ body {
     padding-left: 0; /* Content doesn't move anymore */
 }
 
+/* Prevents the whole page from moving */
+body, html {
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Makes the table area scrollable while the header stays fixed */
+.table-responsive {
+    max-height: 100%; 
+}
