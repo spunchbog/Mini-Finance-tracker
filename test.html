@@ -1,34 +1,5 @@
-<?php include 'db_connect.php'; ?>
-
-<?php
-// 1. Include the connection file
-include('db_connect.php');
-
-// 2. Logic to handle the form submission
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_transaction'])) {
-    
-    // Collecting data from the form inputs
-    $amount = $_POST['amount'];
-    $category = $_POST['category'];
-    $date = $_POST['date'];
-    $description = $_POST['description'];
-    $type = $_POST['type'];
-    $userid = 1; // Placeholder: we will change this once we have user login
-
-    // Using a Prepared Statement to safely insert data
-    $stmt = $conn->prepare("INSERT INTO transactions (userid, amount, category, type, date, description) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("idssss", $userid, $amount, $category, $type, $date, $description);
-
-    if ($stmt->execute()) {
-        echo "<script>alert('Transaction saved successfully!');</script>";
-    } else {
-        echo "Error: " . $stmt->error;
-    }
-    $stmt->close();
-}
-?>
-
-<style>
+<head>
+    <style>
     :root {
         --bg-color: #fcfbf4;
         --card-bg: #ffffff;
