@@ -21,7 +21,8 @@ body {
     border-radius: 10px;
     transition: transform 0.2s ease;
     height: 100%;
-    margin-bottom: 0 !important;
+    padding: 0.75rem !important; /* Tighter internal space */
+    margin-bottom: 0.75rem;
 }
 
 .sidebar {
@@ -29,35 +30,53 @@ body {
     border-right: 1px solid var(--border);
 }
 
-.nav-link:hover {
-    background-color: rgb(255, 255, 255, 0.2);
-    color: var(--text-main) !important;
-    border-radius: 5px;
+
+/* Change color when hovering */
+#sidebar-wrapper .nav-link:hover {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.1); /* Subtle highlight */
+    border-radius: 6px;
 }
 
+#sidebar-wrapper .nav-link {
+    /* This adds space INSIDE the background color */
+    padding-left: 20px !important; 
+    padding-right: 20px !important;
+    display: block;
+    transition: all 0.2s ease;
+}
 
+#sidebar-wrapper .active-link {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #ffffff !important;
+}
+
+/* Sidebar Heading */
+#sidebar-wrapper h4 {
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* Sidebar is now fixed width and won't shrink */
 #sidebar-wrapper {
-    position: absolute; /* Floating over the content */
-    z-index: 999;       /* Stay on top of the cards */
-    height: 100vh;
     width: 250px;
-    left: -250px;       /* Hide off-screen */
-    transition: left 0.3s ease; /* Slide using 'left' instead of margin */
-    background-color: #2D004F !important;
-    box-shadow: 5px 0 15px rgba(0,0,0,0.2); /* Adds a nice shadow over the main content */
+    height: 100vh;
 }
 
-#wrapper.toggled #sidebar-wrapper {
-    left: 0; 
-}
-
+/* Page content takes the remaining width */
 #page-content-wrapper {
-    width: 100%;
-    padding-left: 0; /* Content doesn't move anymore */
+    padding: 1.5em !important;
+    width: calc(100% - 250px);
+    height: 100vh;
+    overflow: hidden;
 }
+
+/* Remove any 'toggled' classes or transforms you had before */
 
 /* Prevents the whole page from moving */
 body, html {
+    font-size: 12px;
     height: 100%;
     overflow: hidden;
 }
@@ -66,3 +85,4 @@ body, html {
 .table-responsive {
     max-height: 100%; 
 }
+
