@@ -13,12 +13,12 @@
 body {
     background-color: var(--background-cream) !important;
     color: var(--text-main);
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
 }
 .card {
     background-color: #ffffff;
-    border: 1px solid var(--border) !important;
-    border-radius: 10px;
+    border-radius: 0.75rem;
     transition: transform 0.2s ease;
     height: 100%;
     padding: 0.75rem !important; /* Tighter internal space */
@@ -27,7 +27,6 @@ body {
 
 .sidebar {
     background-color: #212529 !important; 
-    border-right: 1px solid var(--border);
 }
 
 
@@ -35,20 +34,20 @@ body {
 #sidebar-wrapper .nav-link:hover {
     color: #ffffff !important;
     background-color: rgba(255, 255, 255, 0.1); /* Subtle highlight */
-    border-radius: 6px;
+    border-radius: 0.375rem;
 }
 
 #sidebar-wrapper .nav-link {
     /* This adds space INSIDE the background color */
-    padding-left: 20px !important; 
-    padding-right: 20px !important;
+    padding-left: 1.25rem !important; 
+    padding-right: 1.25rem !important;
     display: block;
     transition: all 0.2s ease;
 }
 
 #sidebar-wrapper .active-link {
     background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
+    border-radius: 0.375rem;
     color: #ffffff !important;
 }
 
@@ -60,13 +59,13 @@ body {
 
 /* Sidebar is now fixed width and won't shrink */
 #sidebar-wrapper {
-    width: 250px;
+    width: 16rem;
     height: 100vh;
 }
 
 /* Page content takes the remaining width */
 #page-content-wrapper {
-    padding: 1.5em !important;
+    padding: 1.5rem !important;
     width: calc(100% - 250px);
     height: 100vh;
     overflow: hidden;
