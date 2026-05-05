@@ -3,7 +3,7 @@
 $host = "localhost";
 $user = "root";
 $pass = "";
-$dbname = "fintrack";
+$dbname = "fintrack.sql";
 
 $conn = new mysqli($host, $user, $pass, $dbname);
 

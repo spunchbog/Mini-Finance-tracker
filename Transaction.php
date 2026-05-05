@@ -1,8 +1,9 @@
-<?php include 'db_connect.php'; ?>
+<?php include 'connection.php'; ?>
 
 <?php
 // 1. Include the connection file
-include 'db_connect.php';
+include('header.php');
+include('connection.php');
 
 // 2. Logic to handle the form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_transaction'])) {
