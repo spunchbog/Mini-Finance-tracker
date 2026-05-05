@@ -1,6 +1,6 @@
 :root {
     /* Neutral UI Colors */
-    --background-cream: #FFFDF5; /* White */
+    --background-cream: #FDFAF5; /* White #FFFDF5 (old) */
     --text-main: #1A1A1A;        /* Black for body text */
     --border: #E0D7C6;           /* Light gold gray for card borders */
 
@@ -23,6 +23,7 @@ body {
     height: 100%;
     padding: 0.75rem !important; /* Tighter internal space */
     margin-bottom: 0.75rem;
+    border: none !important;
 }
 
 .sidebar {
@@ -53,7 +54,7 @@ body {
 
 /* Sidebar Heading */
 #sidebar-wrapper h4 {
-    color: #ffffff;
+    color: #FFFFFF;
     font-weight: bold;
 }
 
@@ -61,6 +62,7 @@ body {
 #sidebar-wrapper {
     width: 16rem;
     height: 100vh;
+    max
 }
 
 /* Page content takes the remaining width */
@@ -75,7 +77,7 @@ body {
 
 /* Prevents the whole page from moving */
 body, html {
-    font-size: 12px;
+    font-size: 14px;
     height: 100%;
     overflow: hidden;
 }
@@ -85,3 +87,77 @@ body, html {
     max-height: 100%; 
 }
 
+@media (max-width: 768px) {
+    body, #wrapper {
+        overflow-y: auto !important; /* Allow vertical scrolling */
+        height: auto !important;     /* Let the height grow with content */
+    }
+
+    #sidebar-wrapper {
+        width: 100%;
+        height: auto !important;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        z-index: 1000;
+        display: flex;
+        flex-direction: row; /* Align links side-by-side */
+        justify-content: space-around;
+        padding: 0 !important;
+    }
+
+    #sidebar-wrapper h4, #sidebar-wrapper hr {
+        display: none; /* Hide the title and line on mobile */
+    }
+
+    #sidebar-wrapper .list-group {
+        flex-direction: row;
+        width: 100%;
+    }
+
+    #sidebar-wrapper .nav-link {
+        padding: 10px !important;
+        margin: 0 !important;
+        font-size: 0.8rem;
+    }
+
+    #page-content-wrapper {
+        overflow-y: visible !important;
+        width: 100% !important;
+        height: 100vh; /* Leave room for the bottom bar */
+    }
+}
+
+/* Make the toggle button look subtle */
+#viewToggle {
+    background-color: #f8f9fa;
+    border: 1px solid #eee;
+    color: #666;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+#viewToggle:hover {
+    background-color: #ffffff;
+    border-color: #0d6efd;
+    color: #0d6efd;
+}
+
+/* Modernizing the dropdown menu */
+.dropdown-menu {
+    border-radius: 12px;
+    padding: 8px;
+    min-width: 140px;
+}
+
+.dropdown-item {
+    border-radius: 8px;
+    font-size: 0.85rem;
+    padding: 8px 12px;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+    color: #0d6efd;
+}
