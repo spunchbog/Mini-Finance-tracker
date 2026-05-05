@@ -1,5 +1,3 @@
-<?php include 'db_connect.php'; ?>
-
 <?php
 // 1. Include the connection file
 include('db_connect.php');
@@ -16,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_transaction'])) {
     $userid = 1; // Placeholder: we will change this once we have user login
 
     // Using a Prepared Statement to safely insert data
-    $stmt = $conn->prepare("INSERT INTO transactions (userid, amount, category, type, date, description) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO transaction (user_id, amount, category, type, date, description) VALUES (?, ?, ?, ?, ?, ?)");
     $stmt->bind_param("idssss", $userid, $amount, $category, $type, $date, $description);
 
     if ($stmt->execute()) {
