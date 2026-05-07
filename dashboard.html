@@ -58,15 +58,15 @@
                     <h6 class="mb-0">Spending Overview</h6>
 					<div class="dropdown">
 						<button class="btn btn-light btn-sm rounded-pill px-3 dropdown-toggle shadow-sm"
-								type="button" id="viewToggle" data-bs-toggle="dropdown" aria-expanded="false">
+								type="button" id="spendingToggle" data-bs-toggle="dropdown" aria-expanded="false">
 							Monthly
 						</button>
-						<ul class="dropdown-menu dropdown-menu-end border-0 shadow" aria-labelledby="viewToggle">
+						<ul class="dropdown-menu dropdown-menu-end border-0 shadow" aria-labelledby="spendingToggle">
 							<li>
-								<a class="dropdown-item" href="#" onclick="updateChart('weekly', 'Weekly')">Weekly View</a>
+								<a class="dropdown-item" href="#" onclick="updateDoughnut('weekly', 'Weekly')">Weekly View</a>
 							</li>
 							<li>
-								<a class="dropdown-item" href="#" onclick="updateChart('monthly', 'Monthly')">Monthly View</a>
+								<a class="dropdown-item" href="#" onclick="updateDoughnut('monthly', 'Monthly')">Monthly View</a>
 							</li>
 						</ul>
 					</div>
@@ -113,7 +113,8 @@
 
 <!-- 2. Chart.js Library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-	
+<!-- 3. Your Custom Dashboard Script -->
+<!--
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const ctx = document.getElementById('spendingChart').getContext('2d');
@@ -176,6 +177,91 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 </script>   
+-->
+<script>
+    // Data for switching views
+    const spendingData = {
+        monthly: {
+            labels: ['Food', 'Rent', 'Bills'],
+            data: [300, 1200, 500]
+        },
+        weekly: {
+            labels: ['Food', 'Coffee', 'Transport'],
+            data: [75, 30, 45]
+        }
+    };
+
+    // Initialize the Doughnut Chart
+    const ctx = document.getElementById('spendingChart').getContext('2d');
+    const spendingChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: spendingData.monthly.labels,
+            datasets: [{
+                data: spendingData.monthly.data,
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+			    hoverOffset: 10,
+                borderWidth: 3,
+                borderColor: '#ffffff'
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+			cutout: '70%',
+            plugins: {
+                legend: {
+                    onClick: (e) => e.stopPropagation(), // This "kills" the click event
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true // Makes legend icons circles instead of boxes
+                    }
+                }
+            }
+        },
+		        // Add this plugin block
+        plugins: [{
+            id: 'centerText',
+            beforeDraw: function(chart) {
+                const width = chart.width,
+                      height = chart.height,
+                      ctx = chart.ctx;
+
+                ctx.restore();
+        
+                // 1. Calculate the total dynamically from the current dataset
+                const activeData = chart.config.data.datasets[0].data;
+                const total = activeData.reduce((a, b) => a + b, 0);
+                const text = "RM " + total.toLocaleString(); // Formats 1000 as 1,000
+
+                const fontSize = (height / 160).toFixed(2);
+                ctx.font = `${fontSize}em sans-serif`; // Added bold for a more modern look
+                ctx.textBaseline = "middle";
+                ctx.fillStyle = "#676767"; 
+
+                const textX = Math.round((width - ctx.measureText(text).width) / 2),
+                      textY = height / 2-16;
+                ctx.fillText(text, textX, textY);
+                ctx.save();
+            }
+        }]
+            });
+
+
+    // Function called by your dropdown buttons
+    function updateDoughnut(view, labelText) {
+        // Update data and labels
+        spendingChart.data.labels = spendingData[view].labels;
+        spendingChart.data.datasets[0].data = spendingData[view].data;
+            
+        // Re-render chart with animation
+        spendingChart.update();
+
+        // Update the dropdown button text
+        const btn = document.getElementById('spendingToggle');
+        btn.innerHTML = `${labelText} <i class="bi bi-chevron-down" style="font-size: 0.6rem;"></i>`;
+    }
+</script>
 <script>
 const trendCtx = document.getElementById('trendChart').getContext('2d');
 new Chart(trendCtx, {
