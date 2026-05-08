@@ -1,7 +1,7 @@
 <?php
 session_start();
 include('header.php');
-include('connection.php');
+include('db_connect.php');
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $err = "<p style='color:red;'>Please fill in all fields.</p>";
     } else {
         // Sanitize User ID (Password doesn't need escaping if using password_verify)
-        $user_id = mysqli_real_escape_string($condb, $_POST['user_id']);
+        $user_id = mysqli_real_escape_string($connb, $_POST['user_id']);
         $password_attempt = $_POST['password'];
 
         // 2. Fetch user data by ID only
@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                   FROM user 
                   WHERE user_id = '$user_id' LIMIT 1";
         
-        $result = mysqli_query($condb, $query);
+        $result = mysqli_query($connb, $query);
 
         if (mysqli_num_rows($result) == 1) {
             $row = mysqli_fetch_array($result);

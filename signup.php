@@ -4,8 +4,8 @@ include('connection.php'); // Ensure this matches your connection filename
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Sanitize user inputs
-    $username = mysqli_real_escape_string($condb, $_POST['username']);
-    $user_id  = mysqli_real_escape_string($condb, $_POST['user_id']);
+    $username = mysqli_real_escape_string($connb, $_POST['username']);
+    $user_id  = mysqli_real_escape_string($connb, $_POST['user_id']);
     
     // We don't sanitize the password because hashing handles it securely
     $plain_password = $_POST['password'];
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     # Check if User ID already exists
     $sql_check = "SELECT user_id FROM user WHERE user_id='$user_id' LIMIT 1";
-    $result = mysqli_query($condb, $sql_check);
+    $result = mysqli_query($connb, $sql_check);
     
     if (mysqli_num_rows($result) > 0) {
         echo "<script>alert('User ID already exists. Please choose another.'); location.href='signup.php';</script>";
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $query = "INSERT INTO user (username, user_id, password, role) 
               VALUES ('$username', '$user_id', '$hashed_password', 'user')";
 
-    if (mysqli_query($condb, $query)) {
+    if (mysqli_query($connb, $query)) {
         echo "<script>
                 alert('User Registered Successfully!');
                 location.href='login.php';
@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         echo "<script>alert('Registration failed. Please try again.');</script>";
         // Useful for debugging during development:
-        // echo mysqli_error($condb); 
+        // echo mysqli_error($connb); 
     }
 }
 ?>

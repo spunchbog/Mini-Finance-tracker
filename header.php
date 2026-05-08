@@ -1,5 +1,4 @@
 <?php
-session_start(); // Important: Allows the script to access $_SESSION data
 $deadline = "2026-10-10 23:59:59"; 
 ?>
 

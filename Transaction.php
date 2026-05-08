@@ -1,5 +1,5 @@
 <?php
-// 1. Include the connection file
+include
 include('db_connect.php');
 
 // 2. Logic to handle the form submission
