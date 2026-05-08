@@ -6,17 +6,29 @@ include('db_connect.php');
 // 2. Logic to handle the form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_transaction'])) {
     
-    // Collecting data from the form inputs
     $amount = $_POST['amount'];
-    $category = $_POST['category'];
+    
+    // Map your text categories to IDs (Check your 'category' table in phpMyAdmin to see the real IDs!)
+    $category_map = [
+        "Food" => 1,
+        "Transport" => 2,
+        "Entertainment" => 3,
+        "Bills" => 4,
+        "Others" => 5
+    ];
+    $category_id = $category_map[$_POST['category']] ?? 5; // Default to 5 if not found
+
     $date = $_POST['date'];
     $description = $_POST['description'];
     $type = $_POST['type'];
-    $userid = 1; // Placeholder: we will change this once we have user login
+    $userid = 1; 
 
-    // Using a Prepared Statement to safely insert data
-    $stmt = $conn->prepare("INSERT INTO transaction (user_id, amount, category, type, date, description) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("idssss", $userid, $amount, $category, $type, $date, $description);
+    // UPDATED SQL: Using the exact column names from your screenshot
+    $stmt = $conn->prepare("INSERT INTO transaction (user_id, category_id, amount, type, date, description) VALUES (?, ?, ?, ?, ?, ?)");
+    
+    // "i" for int, "d" for decimal/double, "s" for string
+    // Order: user_id(i), category_id(i), amount(d), type(s), date(s), description(s)
+    $stmt->bind_param("iidsss", $userid, $category_id, $amount, $type, $date, $description);
 
     if ($stmt->execute()) {
         echo "<script>alert('Transaction saved successfully!');</script>";
