@@ -22,5 +22,6 @@ $deadline = "2026-10-10 23:59:59";
     | <a href='index.php'>Home</a>
     | <a href='login.php'>Login</a>
     | <a href='signup.php'>Sign Up</a>
+    | <a href='transaction.php'>Transactions</a>
 <?php } ?>
 <hr>

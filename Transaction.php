@@ -1,5 +1,6 @@
 <?php
-include
+session_start();
+include('header.php');
 include('db_connect.php');
 
 // 2. Logic to handle the form submission
