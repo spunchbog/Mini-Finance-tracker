@@ -53,9 +53,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_transaction'])) {
         font-family: 'Inter', -apple-system, sans-serif;
         margin: 0;
         height: 100vh;
-        overflow: hidden;
         display: flex;
         flex-direction: column;
+        overflow: hidden;
     }
 
     .main-container {
@@ -64,14 +64,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_transaction'])) {
         justify-content: center;
         align-items: center;
         padding: 20px;
-        width: 100%;
+        box-sizing: border-box;
     }
 
     .input-card {
         background: var(--card-bg);
-        padding: 40px;
+        padding: 30px 40px;
         border-radius: var(--border-radius);
         box-shadow: 0 10px 25px rgba(0,0,0,0.03); /* Soft shadow like the image */
+        width: 100%;
+        max-width: 450px;
     }
 
     .card-header h2 { margin: 0; font-size: 22px; color: var(--text-main); }
