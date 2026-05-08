@@ -1,30 +1,34 @@
 <?php
 include('header.php');
-include('connection.php'); // Ensure this matches your connection filename
+include('db_connect.php');
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Sanitize user inputs
-    $username = mysqli_real_escape_string($connb, $_POST['username']);
-    $user_id  = mysqli_real_escape_string($connb, $_POST['user_id']);
+    $username = mysqli_real_escape_string($condb, $_POST['username']);
+    $user_id  = mysqli_real_escape_string($condb, $_POST['user_id']);
     
     // We don't sanitize the password because hashing handles it securely
     $plain_password = $_POST['password'];
 
-    # Data validation: Numeric check for User ID
-    if (!is_numeric($user_id)) {
-        echo "<script>alert('Please enter a valid numeric User ID'); location.href='signup.php';</script>";
-        exit;
+    # Data validation: Numeric check
+    if (!is_numeric($user_id) ) {
+        die("<script>
+            alert('Please enter a valid numeric user ID');
+            location.href='signup.php';
+        </script>");
     }
 
-    # Data validation: Ensure User ID isn't too short
+    # Data validation: Ensure username isn't too short
     if (strlen($user_id) < 3) {
-        echo "<script>alert('User ID must be at least 3 characters'); location.href='signup.php';</script>";
-        exit;
+        die("<script>
+            alert('User ID must be at least 3 characters');
+            location.href='signup.php';
+        </script>");
     }
 
     # Check if User ID already exists
     $sql_check = "SELECT user_id FROM user WHERE user_id='$user_id' LIMIT 1";
-    $result = mysqli_query($connb, $sql_check);
+    $result = mysqli_query($condb, $sql_check);
     
     if (mysqli_num_rows($result) > 0) {
         echo "<script>alert('User ID already exists. Please choose another.'); location.href='signup.php';</script>";
@@ -39,26 +43,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $query = "INSERT INTO user (username, user_id, password, role) 
               VALUES ('$username', '$user_id', '$hashed_password', 'user')";
 
-    if (mysqli_query($connb, $query)) {
+    if (mysqli_query($condb, $query)) {
         echo "<script>
-                alert('User Registered Successfully!');
-                location.href='login.php';
-              </script>";
+            alert('User Registered Successfully');
+            location.href='login.php';
+            </script>";
     } else {
         echo "<script>alert('Registration failed. Please try again.');</script>";
         // Useful for debugging during development:
-        // echo mysqli_error($connb); 
+        // echo mysqli_error($condb); 
     }
 }
 ?>
 
 <h3>Register New User</h3>
-<p>Fill in the form below to create a new account for FinTrack.</p>
-
+<p>Fill in the form below to create a new account.</p>
 <form method='POST' action=''>
     <table border='0'>
         <tr>
-            <td>Email:</td>
+            <td>Username:</td>
             <td><input type='text' name='username' required></td>
         </tr>
         <tr>
@@ -72,10 +75,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <tr>
             <td colspan='2' align='center'>
                 <br>
-                <button type='submit'>Register Account</button>
+                <button type='submit'>Register</button>
             </td>
         </tr>
     </table>
 </form>
 
 <?php include('footer.php'); ?>
+

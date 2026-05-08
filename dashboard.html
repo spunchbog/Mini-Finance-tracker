@@ -8,13 +8,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+<!-- Remove the toggle button entirely -->
 
-<button class="btn btn-dark position-fixed m-3" id="menu-toggle" style="z-index: 1000;">☰</button>
-
-<div id="wrapper" class="vh-100"> 
-    <!-- Sidebar -->
-    <div id="sidebar-wrapper" class="p-3 text-white">
-        <h4>FinTrack</h4>
+<div id="wrapper" class="d-flex vh-100 w-100" style="overflow: hidden;"> 
+    <!-- Permanent Sidebar -->
+    <div id="sidebar-wrapper" class="p-3 text-white shadow" style="width: 220px; flex-shrink: 0; background-color: var(--safe);">
+        <h4 class="ps-2">FinTrack</h4>
         <hr>
         <div class="list-group list-group-flush">
             <a href="dashboard.html" class="nav-link text-white py-3 active-link">Dashboard</a>
@@ -24,8 +23,7 @@
     </div>
 
     <!-- Main Content Area -->
-    <div id="page-content-wrapper" class="container-fluid vh-100 d-flex flex-column p-4" style="overflow: hidden;">
-        
+    <div id="page-content-wrapper" class="flex-grow-1 d-flex flex-column p-4" style="overflow: hidden;">
         <header class="mb-3" style="flex: 0 1 auto;">
             <h2>Dashboard</h2>
         </header>
@@ -55,23 +53,37 @@
         <!-- Bottom Row: Split Screen (Fills the rest of the height) -->
         <div class="row flex-grow-1" style="min-height: 0;">
             <!-- Left Side: Two Charts stacked -->
-            <div class="col-md-5 d-flex flex-column" style="gap: 15px;">
+            <div class="col-12 col-md-5 d-flex flex-column" style="gap: 15px;">
                 <div class="card p-3 flex-grow-1 shadow-sm">
-                    <h6>Spending Overview</h6>
-                    <div style="position: relative; flex-grow: 1;">
+                    <h6 class="mb-0">Spending Overview</h6>
+					<div class="dropdown">
+						<button class="btn btn-light btn-sm rounded-pill px-3 dropdown-toggle shadow-sm"
+								type="button" id="spendingToggle" data-bs-toggle="dropdown" aria-expanded="false">
+							Monthly
+						</button>
+						<ul class="dropdown-menu dropdown-menu-end border-0 shadow" aria-labelledby="spendingToggle">
+							<li>
+								<a class="dropdown-item" href="#" onclick="updateDoughnut('weekly', 'Weekly')">Weekly View</a>
+							</li>
+							<li>
+								<a class="dropdown-item" href="#" onclick="updateDoughnut('monthly', 'Monthly')">Monthly View</a>
+							</li>
+						</ul>
+					</div>
+                    <div style="height: 200px; width: 100%; margin: 0 auto; position: relative; flex-grow: 1;">
                         <canvas id="spendingChart"></canvas>
                     </div>
                 </div>
                 <div class="card p-3 flex-grow-1 shadow-sm">
                     <h6>Monthly Trend</h6>
-                    <div style="position: relative; flex-grow: 1;">
+                    <div style="height: 200px; width: 100%; margin: 0 auto; position: relative; flex-grow: 1;">
                         <canvas id="trendChart"></canvas>
                     </div>
                 </div>
             </div>
 
             <!-- Right Side: Recent Transactions Table -->
-            <div class="col-md-7 d-flex flex-column">
+            <div class="col-12 col-md-7 d-flex flex-column">
                 <div class="card p-3 shadow-sm h-100" style="overflow: hidden;">
                     <h5 class="mb-3">Recent Transactions</h5>
                     <div class="table-responsive" style="overflow-y: auto;">
@@ -94,14 +106,15 @@
                 </div>
             </div>
         </div>
-
-        <!-- Floating Button -->
-        <button class="btn btn-primary position-fixed shadow-lg" 
-                style="bottom: 20px; right: 20px; border-radius: 50px; padding: 12px 20px; background-color: var(--monarch-purple); border: none; z-index: 1050;">
-            + Add
-        </button>
     </div> 
 </div>
+<!-- 1. Bootstrap Bundle (Essential for the dropdown to function) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- 2. Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- 3. Your Custom Dashboard Script -->
+<!--
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const ctx = document.getElementById('spendingChart').getContext('2d');
@@ -127,6 +140,7 @@ document.addEventListener("DOMContentLoaded", function() {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
+				    
                     position: 'bottom',
                     labels: {
                         padding: 20,
@@ -134,11 +148,120 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                 }
             },
+			
             cutout: '70%' // Creates the hollow center
-        }
+        },
+        // Add this plugin block
+        plugins: [{
+            id: 'centerText',
+            beforeDraw: function(chart) {
+                const width = chart.width,
+                      height = chart.height,
+                      ctx = chart.ctx;
+
+                ctx.restore();
+                const fontSize = (height / 160).toFixed(2);
+                ctx.font = fontSize + "em sans-serif";
+                ctx.textBaseline = "middle";
+                ctx.fillStyle = "#888888"; // Make sure this matches your UI theme
+
+                const text = "RM 530", // Your total calculation
+                      textX = Math.round((width - ctx.measureText(text).width) / 2),
+                      textY = height / 2-16;
+
+                ctx.fillText(text, textX, textY);
+                ctx.save();
+            }
+        }]
     });
 });
+
 </script>   
+-->
+<script>
+    // Data for switching views
+    const spendingData = {
+        monthly: {
+            labels: ['Food', 'Rent', 'Bills'],
+            data: [300, 1200, 500]
+        },
+        weekly: {
+            labels: ['Food', 'Coffee', 'Transport'],
+            data: [75, 30, 45]
+        }
+    };
+
+    // Initialize the Doughnut Chart
+    const ctx = document.getElementById('spendingChart').getContext('2d');
+    const spendingChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: spendingData.monthly.labels,
+            datasets: [{
+                data: spendingData.monthly.data,
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+			    hoverOffset: 10,
+                borderWidth: 3,
+                borderColor: '#ffffff'
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+			cutout: '70%',
+            plugins: {
+                legend: {
+                    onClick: (e) => e.stopPropagation(), // This "kills" the click event
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true // Makes legend icons circles instead of boxes
+                    }
+                }
+            }
+        },
+		        // Add this plugin block
+        plugins: [{
+            id: 'centerText',
+            beforeDraw: function(chart) {
+                const width = chart.width,
+                      height = chart.height,
+                      ctx = chart.ctx;
+
+                ctx.restore();
+        
+                // 1. Calculate the total dynamically from the current dataset
+                const activeData = chart.config.data.datasets[0].data;
+                const total = activeData.reduce((a, b) => a + b, 0);
+                const text = "RM " + total.toLocaleString(); // Formats 1000 as 1,000
+
+                const fontSize = (height / 160).toFixed(2);
+                ctx.font = `${fontSize}em sans-serif`; // Added bold for a more modern look
+                ctx.textBaseline = "middle";
+                ctx.fillStyle = "#676767"; 
+
+                const textX = Math.round((width - ctx.measureText(text).width) / 2),
+                      textY = height / 2-16;
+                ctx.fillText(text, textX, textY);
+                ctx.save();
+            }
+        }]
+            });
+
+
+    // Function called by your dropdown buttons
+    function updateDoughnut(view, labelText) {
+        // Update data and labels
+        spendingChart.data.labels = spendingData[view].labels;
+        spendingChart.data.datasets[0].data = spendingData[view].data;
+            
+        // Re-render chart with animation
+        spendingChart.update();
+
+        // Update the dropdown button text
+        const btn = document.getElementById('spendingToggle');
+        btn.innerHTML = `${labelText} <i class="bi bi-chevron-down" style="font-size: 0.6rem;"></i>`;
+    }
+</script>
 <script>
 const trendCtx = document.getElementById('trendChart').getContext('2d');
 new Chart(trendCtx, {
@@ -157,18 +280,21 @@ new Chart(trendCtx, {
     },
     options: {
         maintainAspectRatio: false,
-        scales: {
-            y: { beginAtZero: true }
+        layout: {
+            padding: 5 // Reduces the "white space" inside the canvas
+        },
+        plugins: {
+            legend: {
+                display: true,
+                position: 'bottom',
+                labels: {
+                    boxWidth: 10, // Smaller legend icons
+                    font: { size: 10 } // Smaller legend text
+                }
+            }
         }
     }
 });
 </script>
-<script>
-    const menuToggle = document.getElementById('menu-toggle');
-    const wrapper = document.getElementById('wrapper');
 
-    menuToggle.addEventListener('click', () => {
-        wrapper.classList.toggle('toggled');
-    });
-</script>
 </body>
