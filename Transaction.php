@@ -52,13 +52,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_transaction'])) {
         background-color: var(--bg-color);
         font-family: 'Inter', -apple-system, sans-serif;
         margin: 0;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
     }
 
     .main-container {
-        width: 100%;
-        max-width: 500px;
-        margin: 50px auto;
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         padding: 20px;
+        width: 100%;
     }
 
     .input-card {
