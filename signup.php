@@ -3,7 +3,7 @@ include('db_connect.php');
 
 // logic to reset the demo user via the button link
 if (isset($_GET['reset_demo'])) {
-    mysqli_query($condb, "UPDATE user SET initial_capital = 0, setup_complete = 0 WHERE user_id = '1'");
+    mysqli_query($conn, "UPDATE user SET initial_capital = 0, setup_complete = 0 WHERE user_id = '1'");
     header("Location: InitialPage.php");
     exit;
 }
