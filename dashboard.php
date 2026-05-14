@@ -82,7 +82,7 @@ require_once 'data.php'; // pulls in variables and calculations
                             <li><h6 class="dropdown-header">Trailing Periods</h6></li>
                             <li><a class="dropdown-item" href="#" onclick="applyFilter('7_days', 'Last 7 Days')">Last 7 Days</a></li>
                             <li><a class="dropdown-item" href="#" onclick="applyFilter('30_days', 'Last 30 Days')">Last 30 Days</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="applyFilter('12_weeks', 'Last 12 Weeks')">Last 12 Weeks</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="applyFilter('3_months', 'Last 3 Months')">Last 3 Months</a></li>
                             <li><a class="dropdown-item" href="#" onclick="applyFilter('6_months', 'Last 6 Months')">Last 6 Months</a></li>
                             <li><a class="dropdown-item" href="#" onclick="applyFilter('1_year', 'Last 1 Year')">Last 1 Year</a></li>
                             <li><a class="dropdown-item" href="#" onclick="applyFilter('5_years', 'Last 5 Years')">Last 5 Years</a></li>
@@ -129,8 +129,14 @@ require_once 'data.php'; // pulls in variables and calculations
                                 <?php foreach ($transactions as $trx): ?>
                                     <tr>
                                         <td><?= $trx['cat'] ?></td>
-                                        <td class="<?= $trx['amt'] > 0 ? 'text-success' : 'text-danger' ?>">
-                                            <?= $trx['amt'] > 0 ? '+' : '-' ?> RM <?= number_format(abs($trx['amt']), 2) ?>
+                                        <td class="<?php echo ($trx['type'] === 'income') ? 'text-success' : 'text-danger'; ?>">
+                                            <?php 
+                                                // Determine the sign based on type
+                                                $sign = ($trx['type'] === 'income') ? '+' : '-';
+                
+                                                // Echo the sign followed by the absolute amount
+                                                echo $sign . ' RM ' . number_format(abs($trx['amt']), 2); 
+                                            ?>
                                         </td>
                                         <td class="text-muted small">
                                             <?= date('M d, Y', strtotime($trx['date'])) ?>
@@ -154,31 +160,42 @@ require_once 'data.php'; // pulls in variables and calculations
 <script>
 const trendCtx = document.getElementById('trendChart').getContext('2d');
 new Chart(trendCtx, {
-    type: 'bar', // Or 'line'
+    type: 'bar', 
     data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr'],
+        // Labels from PHP: ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May']
+        labels: <?php echo json_encode($trendLabels); ?>,
         datasets: [{
             label: 'Income',
-            data: [1100, 1200, 1000, 1200],
-            backgroundColor: '#88D38C' // --safe color 
+            data: <?php echo json_encode($finalTrendIncome); ?>,
+            backgroundColor: '#88D38C',
+            borderRadius: 5 // Makes the bars look modern
         }, {
             label: 'Expenses',
-            data: [600, 530, 800, 450],
-            backgroundColor: '#B71C1C' // --danger color
+            data: <?php echo json_encode($finalTrendExpense); ?>,
+            backgroundColor: '#B71C1C',
+            borderRadius: 5
         }]
     },
     options: {
         maintainAspectRatio: false,
-        layout: {
-            padding: 5 // Reduces the "white space" inside the canvas
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { display: false }, // Cleaner look
+                ticks: { font: { size: 10 } }
+            },
+            x: {
+                grid: { display: false },
+                ticks: { font: { size: 10 } }
+            }
         },
         plugins: {
             legend: {
                 display: true,
                 position: 'bottom',
                 labels: {
-                    boxWidth: 10, // Smaller legend icons
-                    font: { size: 10 } // Smaller legend text
+                    boxWidth: 10,
+                    font: { size: 10 }
                 }
             }
         }

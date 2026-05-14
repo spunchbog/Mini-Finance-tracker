@@ -65,7 +65,7 @@ foreach ($transactions as $trx) {
         if ($trxTime >= $today)          $buckets['today'][$catName]      = ($buckets['today'][$catName] ?? 0) + $amt;
         if ($trxTime >= $sevenDaysAgo)   $buckets['7_days'][$catName]     = ($buckets['7_days'][$catName] ?? 0) + $amt;
         if ($trxTime >= $thirtyDaysAgo)  $buckets['30_days'][$catName]    = ($buckets['30_days'][$catName] ?? 0) + $amt;
-        if ($trxTime >= $ninetyDaysAgo)  $buckets['12_weeks'][$catName]   = ($buckets['12_weeks'][$catName] ?? 0) + $amt;
+        if ($trxTime >= $ninetyDaysAgo)  $buckets['3_months'][$catName]   = ($buckets['3_months'][$catName] ?? 0) + $amt;
         if ($trxTime >= $sixMonthsAgo)   $buckets['6_months'][$catName]   = ($buckets['6_months'][$catName] ?? 0) + $amt;
         if ($trxTime >= $oneYearAgo)     $buckets['1_year'][$catName]     = ($buckets['1_year'][$catName] ?? 0) + $amt;
         if ($trxTime >= $fiveYearsAgo)   $buckets['5_years'][$catName]    = ($buckets['5_years'][$catName] ?? 0) + $amt;
@@ -104,14 +104,4 @@ foreach ($transactions as $trx) {
 
 // Calculate Balance
 $totalBalance = $totalIncome - $totalExpense;
-
-// 7. FETCH INITIAL CAPITAL
-// Using the PDO connection already established in your data.php
-$userStmt = $pdo->prepare("SELECT initial_capital FROM user WHERE user_id = 1");
-$userStmt->execute();
-$userData = $userStmt->fetch();
-$initialCapital = (float)($userData['initial_capital'] ?? 0);
-
-// New Correct Balance calculation
-$currentBalance = $initialCapital + $totalIncome - $totalExpense;
 ?>
