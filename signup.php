@@ -43,10 +43,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               VALUES ('$username', '$user_id', '$hashed_password', 'user')";
 
     if (mysqli_query($condb, $query)) {
-        echo "<script>
-            alert('User Registered Successfully');
-            location.href='login.php';
-            </script>";
+    echo "<script>
+        alert('User Registered Successfully! Redirecting to setup...');
+        location.href='InitialPage.php'; // Change from login.php to InitialPage.php
+        </script>";
     } else {
         echo "<script>alert('Registration failed. Please try again.');</script>";
         // Useful for debugging during development:
@@ -99,8 +99,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </form>
 </div>
 <div class="mt-3">
-    <a href="InitialPage.php" class="btn btn-outline-primary shadow-sm">
-        <i class="bi bi-gear-fill"></i> Trigger First-Time Setup (Demo)
+    <a href="signup.php?reset_demo=1" class="btn btn-outline-primary shadow-sm">
+        <i class="bi bi-gear-fill"></i> Reset & Test Setup Flow
     </a>
 </div>
 </body>
