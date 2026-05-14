@@ -7,12 +7,12 @@ require_once 'data.php'; // Pulls in all your variables and calculations
 $currentMonth = "May 2026";
 // Your data "Source of Truth"
 $monthlySpending = [
-    'labels' => ['Food', 'Rent', 'Bills'],
+    'labels' => ['Food', 'Transport', 'Entertainment'],
     'data' => [300, 1200, 500]
 ];
 
 $weeklySpending = [
-    'labels' => ['Groceries', 'Coffee', 'Fuel'],
+    'labels' => ['Food', 'Transport', 'Entertainment'],
     'data' => [85, 40, 60]
 ];
 ?>

@@ -2,7 +2,7 @@
 // db_connect.php
 $host = "10.163.1.185";
 $user = "fintracker";
-$pass = "";
+$pass = "fintrack";
 $dbname = "fintrack";
 
 $conn = new mysqli($host, $user, $pass, $dbname);
