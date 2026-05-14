@@ -1,6 +1,8 @@
 <?php
 
 session_start();
+require_once 'data.php'; // Pulls in all your variables and calculations
+
 // Top of dashboard.php
 $currentMonth = "May 2026";
 // Your data "Source of Truth"
@@ -33,6 +35,7 @@ $weeklySpending = [
     <div id="page-content-wrapper" class="flex-grow-1 d-flex flex-column p-4" style="overflow: hidden;">
         <header class="mb-3" style="flex: 0 1 auto;">
             <h2>Dashboard</h2>
+            <p class="text-muted small mb-0"><?= date('l, d M Y') ?></p>
         </header>
 
         <!-- Top Row: Metric Cards (Stays at the top) -->
@@ -40,19 +43,19 @@ $weeklySpending = [
             <div class="col-md-4">
                 <div class="card p-3 shadow-sm border-0" style="border-left: 5px solid var(--border) !important;">
                     <h6 class="text-muted">Total Balance</h6>
-                    <h3>RM 670</h3>
+                    <h3>RM <?= number_format($totalIncome - $totalExpense, 2) ?></h3>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card p-3 shadow-sm border-0" style="border-left: 5px solid var(--safe) !important;">
                     <h6 class="text-muted">Total Income</h6>
-                    <h3 style="color: var(--safe);">RM 1,200</h3>
+                    <h3 style="color: var(--safe);">RM <?= number_format($totalIncome, 2) ?></h3>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card p-3 shadow-sm border-0" style="border-left: 5px solid var(--danger) !important;">
                     <h6 class="text-muted">Total Expenses</h6>
-                    <h3 style="color: var(--danger);">RM 530</h3>
+                    <h3 style="color: var(--danger);">RM <?= number_format($totalExpense, 2) ?></</h3>
                 </div>
             </div>
         </div>
@@ -97,16 +100,23 @@ $weeklySpending = [
                         <table class="table table-hover align-middle">
                             <thead class="table-light sticky-top">
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Description</th>
+                                    <th>Category</th>
                                     <th>Amount</th>
+                                    <th>Date</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr><td>2026-04-20</td><td>Part-time Job</td><td style="color: var(--safe);">+ RM 1,200</td></tr>
-                                <tr><td>2026-04-21</td><td>Starbucks</td><td style="color: var(--danger);">- RM 25</td></tr>
-                                <tr><td>2026-04-21</td><td>Grocery</td><td style="color: var(--danger);">- RM 150</td></tr>
-                                <!-- Add more rows here to test the scroll -->
+                                <?php foreach ($transactions as $trx): ?>
+                                    <tr>
+                                        <td><?= $trx['name'] ?></td>
+                                        <td class="<?= $trx['amt'] > 0 ? 'text-success' : 'text-danger' ?>">
+                                            <?= $trx['amt'] > 0 ? '+' : '-' ?> RM <?= number_format(abs($trx['amt']), 2) ?>
+                                        </td>
+                                        <td class="text-muted small">
+                                            <?= date('M d, Y', strtotime($trx['date'])) ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>

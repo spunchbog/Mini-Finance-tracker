@@ -1,7 +1,7 @@
 <?php
 // db_connect.php
-$host = "localhost";
-$user = "root";
+$host = "10.163.1.185";
+$user = "fintracker";
 $pass = "";
 $dbname = "fintrack";
 
