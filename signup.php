@@ -98,6 +98,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </table>
     </form>
 </div>
+<div class="mt-3">
+    <a href="InitialPage.php" class="btn btn-outline-primary shadow-sm">
+        <i class="bi bi-gear-fill"></i> Trigger First-Time Setup (Demo)
+    </a>
+</div>
 </body>
 </html>
 

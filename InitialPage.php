@@ -1,3 +1,19 @@
+<?php
+session_start();
+require_once 'db_connect.php';
+
+$user_id = 1; // Forcing User 1 for the demo
+
+// If they already finished setup, don't let them stay here
+$query = mysqli_query($conn, "SELECT setup_complete FROM user WHERE user_id = $user_id");
+$user = mysqli_fetch_assoc($query);
+
+if ($user['setup_complete'] == 1) {
+    header("Location: dashboard.php");
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
