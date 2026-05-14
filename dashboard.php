@@ -66,20 +66,40 @@ $weeklySpending = [
             <div class="col-12 col-md-5 d-flex flex-column" style="gap: 15px;">
                 <div class="card p-3 flex-grow-1 shadow-sm">
                     <h6 class="mb-0">Spending Overview</h6>
-					<div class="dropdown">
-						<button class="btn btn-light btn-sm rounded-pill px-3 dropdown-toggle shadow-sm"
-								type="button" id="spendingToggle" data-bs-toggle="dropdown" aria-expanded="false">
-							Monthly
-						</button>
-						<ul class="dropdown-menu dropdown-menu-end border-0 shadow" aria-labelledby="spendingToggle">
-							<li>
-								<a class="dropdown-item" href="#" onclick="updateDoughnut('weekly', 'Weekly')">Weekly View</a>
-							</li>
-							<li>
-								<a class="dropdown-item" href="#" onclick="updateDoughnut('monthly', 'Monthly')">Monthly View</a>
-							</li>
-						</ul>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 dropdown-toggle shadow-sm"
+                                type="button" id="rangeToggle" data-bs-toggle="dropdown">
+                            This Month
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg" style="max-height: 300px; overflow-y: auto;">
+                            <li><h6 class="dropdown-header">Standard</h6></li>
+                            <li><a class="dropdown-item" href="#" onclick="applyFilter('today', 'Today')">Today</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="applyFilter('this_week', 'This Week')">This Week</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="applyFilter('this_month', 'This Month')">This Month</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="applyFilter('this_year', 'This Year')">This Year</a></li>
+                
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header">Trailing Periods</h6></li>
+                            <li><a class="dropdown-item" href="#" onclick="applyFilter('7_days', 'Last 7 Days')">Last 7 Days</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="applyFilter('30_days', 'Last 30 Days')">Last 30 Days</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="applyFilter('12_weeks', 'Last 12 Weeks')">Last 12 Weeks</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="applyFilter('6_months', 'Last 6 Months')">Last 6 Months</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="applyFilter('1_year', 'Last 1 Year')">Last 1 Year</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="applyFilter('5_years', 'Last 5 Years')">Last 5 Years</a></li>
+                
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-primary fw-bold" href="#" onclick="showCustomPicker()">Custom Range...</a></li>
+                        </ul>
 					</div>
+                
+                <div id="customDateContainer" class="d-none bg-light p-2 rounded mb-3 border">
+                        <div class="d-flex gap-2 align-items-center">
+                            <input type="date" id="startDate" class="form-control form-control-sm">
+                            <span class="small text-muted">to</span>
+                            <input type="date" id="endDate" class="form-control form-control-sm">
+                            <button class="btn btn-primary btn-sm" onclick="applyCustomRange()">Go</button>
+                        </div>
+                    </div>
                     <div style="height: 200px; width: 100%; margin: 0 auto; position: relative; flex-grow: 1;">
                         <canvas id="spendingChart"></canvas>
                     </div>
@@ -195,11 +215,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
 </script>   
 -->
+<!--
 <script>
 // PHP injects the data here
     const spendingData = {
         monthly: {
-            labels: <?php echo json_encode($monthlySpending['labels']); ?>,
+            labels: //<?php echo json_encode($monthlySpending['labels']); ?>,
             data: <?php echo json_encode($monthlySpending['data']); ?>
         },
         weekly: {
@@ -279,6 +300,7 @@ document.addEventListener("DOMContentLoaded", function() {
         btn.innerHTML = `${labelText} <i class="bi bi-chevron-down" style="font-size: 0.6rem;"></i>`;
     }
 </script>
+-->
 <script>
 const trendCtx = document.getElementById('trendChart').getContext('2d');
 new Chart(trendCtx, {
@@ -313,5 +335,63 @@ new Chart(trendCtx, {
     }
 });
 </script>
+<script>
+    function applyFilter(range, label) {
+        // Update the button text
+        document.getElementById('rangeToggle').innerText = label;
+    
+        // Get the data for the range selected (e.g., '7_days')
+        const newData = allSpendingData[range];
 
+        if (newData) {
+            // Update the labels and data points
+            spendingChart.data.labels = newData.labels;
+            spendingChart.data.datasets[0].data = newData.data;
+        
+            // Redraw the chart with a smooth animation
+            spendingChart.update();
+        }
+    }
+</script>
+<script>
+// 1. Pull the pre-calculated data from data.php
+const allSpendingData = <?php echo json_encode($finalChartData); ?>;
+
+// 2. Setup the Initial View (Default to 'this_month')
+const initialData = allSpendingData['this_month'];
+
+const ctx = document.getElementById('spendingChart').getContext('2d');
+
+// 3. Create the Chart Instance
+const spendingChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: initialData.labels,
+        datasets: [{
+            data: initialData.data,
+            backgroundColor: [
+                '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796'
+            ],
+            hoverOffset: 10,
+            borderWidth: 2,
+            borderColor: '#ffffff'
+        }]
+    },
+    options: {
+        maintainAspectRatio: false,
+        cutout: '75%', // This creates the "hole" in the middle
+        plugins: {
+            legend: {
+                display: true,
+                position: 'bottom',
+                labels: {
+                    usePointStyle: true,
+                    padding: 20,
+                    font: { size: 12 }
+                }
+            }
+        }
+    }
+});
+</script>
 </body>
