@@ -65,7 +65,7 @@ foreach ($transactions as $trx) {
         if ($trxTime >= $today)          $buckets['today'][$catName]      = ($buckets['today'][$catName] ?? 0) + $amt;
         if ($trxTime >= $sevenDaysAgo)   $buckets['7_days'][$catName]     = ($buckets['7_days'][$catName] ?? 0) + $amt;
         if ($trxTime >= $thirtyDaysAgo)  $buckets['30_days'][$catName]    = ($buckets['30_days'][$catName] ?? 0) + $amt;
-        if ($trxTime >= $ninetyDaysAgo)  $buckets['12_weeks'][$catName]   = ($buckets['12_weeks'][$catName] ?? 0) + $amt;
+        if ($trxTime >= $ninetyDaysAgo)  $buckets['3_months'][$catName]   = ($buckets['3_months'][$catName] ?? 0) + $amt;
         if ($trxTime >= $sixMonthsAgo)   $buckets['6_months'][$catName]   = ($buckets['6_months'][$catName] ?? 0) + $amt;
         if ($trxTime >= $oneYearAgo)     $buckets['1_year'][$catName]     = ($buckets['1_year'][$catName] ?? 0) + $amt;
         if ($trxTime >= $fiveYearsAgo)   $buckets['5_years'][$catName]    = ($buckets['5_years'][$catName] ?? 0) + $amt;
@@ -104,4 +104,40 @@ foreach ($transactions as $trx) {
 
 // Calculate Balance
 $totalBalance = $totalIncome - $totalExpense;
+
+
+// 1. Get the last 6 months (e.g., ["Dec", "Jan", "Feb", "Mar", "Apr", "May"])
+$trendLabels = [];
+$trendIncome = [];
+$trendExpense = [];
+
+for ($i = 5; $i >= 0; $i--) {
+    $monthKey = date('Y-m', strtotime("-$i months")); // e.g., "2026-05"
+    $monthLabel = date('M', strtotime("-$i months")); // e.g., "May"
+    
+    $trendLabels[] = $monthLabel;
+    $trendIncome[$monthKey] = 0;
+    $trendExpense[$monthKey] = 0;
+}
+
+// 2. Loop through transactions and sum them up by month/type
+foreach ($transactions as $trx) {
+    $trxMonth = date('Y-m', strtotime($trx['date'])); // e.g., "2026-05"
+    
+    // If the transaction month exists in our 6-month window
+    if (isset($trendIncome[$trxMonth])) {
+        $amt = (float)$trx['amt'];
+        
+        if ($trx['type'] === 'income') {
+            $trendIncome[$trxMonth] += $amt;
+        } else {
+            $trendExpense[$trxMonth] += abs($amt);
+        }
+    }
+}
+
+// 3. Convert to simple arrays for Chart.js
+$finalTrendIncome = array_values($trendIncome);
+$finalTrendExpense = array_values($trendExpense);
+
 ?>
