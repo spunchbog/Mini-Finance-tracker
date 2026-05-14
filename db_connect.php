@@ -1,6 +1,6 @@
 <?php
 // db_connect.php
-$host = "10.163.1.185";
+$host = "10.169.130.185";
 $user = "fintracker";
 $pass = "fintrack";
 $dbname = "fintrack";

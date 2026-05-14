@@ -1,8 +1,20 @@
 <?php
-
 session_start();
-require_once 'data.php'; // Pulls in all your variables and calculations
+include('db_connect.php');
 
+// TEMPORARY: Force User 1
+$user_id = 1;
+
+// Check if setup is done
+$check = mysqli_query($conn, "SELECT setup_complete FROM user WHERE user_id = $user_id");
+$user = mysqli_fetch_assoc($check);
+
+if ($user['setup_complete'] == 0) {
+    header("Location: InitialPage.php");
+    exit();
+}
+
+require_once 'data.php'; // pulls in variables and calculations
 ?>
 
 <!DOCTYPE html>
