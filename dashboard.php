@@ -1,3 +1,8 @@
+<?php
+session_start();
+include('header.php');
+?>
+
 <!DOCTYPE html>
 <html lang="en">    
 <head>  
@@ -17,7 +22,7 @@
         <hr>
         <div class="list-group list-group-flush">
             <a href="dashboard.html" class="nav-link text-white py-3 active-link">Dashboard</a>
-            <a href="transactions.html" class="nav-link text-white py-3">Transactions</a>
+            <a href="transactions.php" class="nav-link text-white py-3">Transactions</a>
             <a href="#" class="nav-link text-white py-3">Budgets</a>
         </div>
     </div>
