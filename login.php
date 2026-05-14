@@ -1,6 +1,5 @@
 <?php
 session_start();
-include('header.php');
 include('db_connect.php');
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -47,10 +46,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 ?>
 
-<div class="login-container">
-    <h3>User Login</h3>
-    <p>Please complete the information below to access FinTrack</p>
+<!DOCTYPE html>
+<html lang="en">    
+<head>  
+    <meta charset="UTF-8">
+    <title>FinTrack Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div id="wrapper" class="d-flex vh-100 w-100" style="overflow: hidden;"> 
+    <?php include 'sidebar.php'; ?>
+    </div>
 
+    <!-- Main Content Area -->
+<div id="page-content-wrapper" class="flex-grow-1 d-flex flex-column p-4" style="overflow: hidden;">
+    <header class="mb-3" style="flex: 0 1 auto;">
+    <h3>User Login</h3>
+    </header>
+    <p>Please complete the information below to access FinTrack</p>
     <form action='' method='POST'>
         <table border='0'>
             <tr>
@@ -71,5 +86,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <?php if (!empty($err)) echo $err; ?>
     </form>
 </div>
-
-<?php include('footer.php'); ?>
+</body>
+</html>

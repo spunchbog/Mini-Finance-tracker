@@ -1,6 +1,5 @@
 <?php
 session_start();
-include('header.php');
 include('db_connect.php');
 
 // 2. Logic to handle the form submission
@@ -109,57 +108,74 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_transaction'])) {
     .submit-btn:hover { transform: translateY(-2px); opacity: 0.9; }
 </style>
 </head>
+<!DOCTYPE html>
+<html lang="en">    
+<head>  
+    <meta charset="UTF-8">
+    <title>FinTrack Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div id="wrapper" class="d-flex vh-100 w-100" style="overflow: hidden;"> 
+    <?php include 'sidebar.php'; ?>
+    </div>
 
-<div class="main-container">
-    <div class="input-card">
-        <div class="card-header">
-            <h2>Log New Transaction</h2>
-            <p>Enter your transaction details below to update your dashboard.</p>
+    <!-- Main Content Area -->
+    <div class="main-container">
+        <div class="input-card">
+            <div class="card-header">
+                <h2>Log New Transaction</h2>
+                <p>Enter your transaction details below to update your dashboard.</p>
+            </div>
+
+            <form action="transaction.php" method="POST" class="modern-form">
+                <div class="form-group">
+                    <label>Amount (RM)</label>
+                    <input type="number" name="amount" step="0.01" placeholder="0.00" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select name="category" id="categorySelect" onchange="toggleOtherInput()">
+                            <option value="Food">Food</option>
+                            <option value="Transport">Transport</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Bills">Bills</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select name="type">
+                            <option value="expense">Expense</option>
+                            <option value="income">Income</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Custom Category Input (Hidden by default) -->
+                <div id="otherCategoryDiv" class="form-group animate-fade" style="display:none;">
+                    <label>Specify Hobby/Activity</label>
+                    <input type="text" name="other_category" placeholder="e.g., Badminton">
+                </div>
+
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" name="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" name="description" placeholder="e.g., Lunch at MMU">
+                </div>
+
+                <button type="submit" name="add_transaction" class="submit-btn">Save Transaction</button>
+            </form>
         </div>
-
-        <form action="transaction.php" method="POST" class="modern-form">
-            <div class="form-group">
-                <label>Amount (RM)</label>
-                <input type="number" name="amount" step="0.01" placeholder="0.00" required>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Category</label>
-                    <select name="category" id="categorySelect" onchange="toggleOtherInput()">
-                        <option value="Food">Food</option>
-                        <option value="Transport">Transport</option>
-                        <option value="Entertainment">Entertainment</option>
-                        <option value="Bills">Bills</option>
-                        <option value="Others">Others</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Type</label>
-                    <select name="type">
-                        <option value="expense">Expense</option>
-                        <option value="income">Income</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Custom Category Input (Hidden by default) -->
-            <div id="otherCategoryDiv" class="form-group animate-fade" style="display:none;">
-                <label>Specify Hobby/Activity</label>
-                <input type="text" name="other_category" placeholder="e.g., Badminton">
-            </div>
-
-            <div class="form-group">
-                <label>Date</label>
-                <input type="date" name="date" required>
-            </div>
-
-            <div class="form-group">
-                <label>Description</label>
-                <input type="text" name="description" placeholder="e.g., Lunch at MMU">
-            </div>
-
-            <button type="submit" name="add_transaction" class="submit-btn">Save Transaction</button>
-        </form>
     </div>
 </div>
+</body>
+</html>

@@ -1,6 +1,18 @@
 <?php
+
 session_start();
-include('header.php');
+// Top of dashboard.php
+$currentMonth = "May 2026";
+// Your data "Source of Truth"
+$monthlySpending = [
+    'labels' => ['Food', 'Rent', 'Bills'],
+    'data' => [300, 1200, 500]
+];
+
+$weeklySpending = [
+    'labels' => ['Groceries', 'Coffee', 'Fuel'],
+    'data' => [85, 40, 60]
+];
 ?>
 
 <!DOCTYPE html>
@@ -13,18 +25,8 @@ include('header.php');
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<!-- Remove the toggle button entirely -->
-
 <div id="wrapper" class="d-flex vh-100 w-100" style="overflow: hidden;"> 
-    <!-- Permanent Sidebar -->
-    <div id="sidebar-wrapper" class="p-3 text-white shadow" style="width: 220px; flex-shrink: 0; background-color: var(--safe);">
-        <h4 class="ps-2">FinTrack</h4>
-        <hr>
-        <div class="list-group list-group-flush">
-            <a href="dashboard.html" class="nav-link text-white py-3 active-link">Dashboard</a>
-            <a href="transactions.php" class="nav-link text-white py-3">Transactions</a>
-            <a href="#" class="nav-link text-white py-3">Budgets</a>
-        </div>
+    <?php include 'sidebar.php'; ?>
     </div>
 
     <!-- Main Content Area -->
@@ -184,15 +186,15 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>   
 -->
 <script>
-    // Data for switching views
+// PHP injects the data here
     const spendingData = {
         monthly: {
-            labels: ['Food', 'Rent', 'Bills'],
-            data: [300, 1200, 500]
+            labels: <?php echo json_encode($monthlySpending['labels']); ?>,
+            data: <?php echo json_encode($monthlySpending['data']); ?>
         },
         weekly: {
-            labels: ['Food', 'Coffee', 'Transport'],
-            data: [75, 30, 45]
+            labels: <?php echo json_encode($weeklySpending['labels']); ?>,
+            data: <?php echo json_encode($weeklySpending['data']); ?>
         }
     };
 
