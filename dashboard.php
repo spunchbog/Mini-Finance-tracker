@@ -3,18 +3,6 @@
 session_start();
 require_once 'data.php'; // Pulls in all your variables and calculations
 
-// Top of dashboard.php
-$currentMonth = "May 2026";
-// Your data "Source of Truth"
-$monthlySpending = [
-    'labels' => ['Food', 'Transport', 'Entertainment'],
-    'data' => [300, 1200, 500]
-];
-
-$weeklySpending = [
-    'labels' => ['Food', 'Transport', 'Entertainment'],
-    'data' => [85, 40, 60]
-];
 ?>
 
 <!DOCTYPE html>
@@ -128,7 +116,7 @@ $weeklySpending = [
                             <tbody>
                                 <?php foreach ($transactions as $trx): ?>
                                     <tr>
-                                        <td><?= $trx['name'] ?></td>
+                                        <td><?= $trx['cat'] ?></td>
                                         <td class="<?= $trx['amt'] > 0 ? 'text-success' : 'text-danger' ?>">
                                             <?= $trx['amt'] > 0 ? '+' : '-' ?> RM <?= number_format(abs($trx['amt']), 2) ?>
                                         </td>
@@ -150,157 +138,7 @@ $weeklySpending = [
 
 <!-- 2. Chart.js Library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- 3. Your Custom Dashboard Script -->
-<!--
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    const ctx = document.getElementById('spendingChart').getContext('2d');
-    
-    new Chart(ctx, {
-        type: 'doughnut', 
-        data: {
-            labels: ['Food', 'Transport', 'Entertainment', 'Others'],
-            datasets: [{
-                data: [300, 150, 80, 50],
-                backgroundColor: [
-                    '#4e73df', // Blue
-                    '#1cc88a', // Green
-                    '#f6c23e', // Yellow
-                    '#e74a3b'  // Red
-                ],
-                hoverOffset: 10,
-                borderWidth: 3,
-                borderColor: '#ffffff'
-            }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-				    
-                    position: 'bottom',
-                    labels: {
-                        padding: 20,
-                        usePointStyle: true // Makes legend icons circles instead of boxes
-                    }
-                }
-            },
-			
-            cutout: '70%' // Creates the hollow center
-        },
-        // Add this plugin block
-        plugins: [{
-            id: 'centerText',
-            beforeDraw: function(chart) {
-                const width = chart.width,
-                      height = chart.height,
-                      ctx = chart.ctx;
 
-                ctx.restore();
-                const fontSize = (height / 160).toFixed(2);
-                ctx.font = fontSize + "em sans-serif";
-                ctx.textBaseline = "middle";
-                ctx.fillStyle = "#888888"; // Make sure this matches your UI theme
-
-                const text = "RM 530", // Your total calculation
-                      textX = Math.round((width - ctx.measureText(text).width) / 2),
-                      textY = height / 2-16;
-
-                ctx.fillText(text, textX, textY);
-                ctx.save();
-            }
-        }]
-    });
-});
-
-</script>   
--->
-<!--
-<script>
-// PHP injects the data here
-    const spendingData = {
-        monthly: {
-            labels: //<?php echo json_encode($monthlySpending['labels']); ?>,
-            data: <?php echo json_encode($monthlySpending['data']); ?>
-        },
-        weekly: {
-            labels: <?php echo json_encode($weeklySpending['labels']); ?>,
-            data: <?php echo json_encode($weeklySpending['data']); ?>
-        }
-    };
-
-    // Initialize the Doughnut Chart
-    const ctx = document.getElementById('spendingChart').getContext('2d');
-    const spendingChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: spendingData.monthly.labels,
-            datasets: [{
-                data: spendingData.monthly.data,
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-			    hoverOffset: 10,
-                borderWidth: 3,
-                borderColor: '#ffffff'
-            }],
-        },
-        options: {
-            maintainAspectRatio: false,
-			cutout: '70%',
-            plugins: {
-                legend: {
-                    onClick: (e) => e.stopPropagation(), // This "kills" the click event
-                    position: 'bottom',
-                    labels: {
-                        padding: 20,
-                        usePointStyle: true // Makes legend icons circles instead of boxes
-                    }
-                }
-            }
-        },
-		        // Add this plugin block
-        plugins: [{
-            id: 'centerText',
-            beforeDraw: function(chart) {
-                const width = chart.width,
-                      height = chart.height,
-                      ctx = chart.ctx;
-
-                ctx.restore();
-        
-                // 1. Calculate the total dynamically from the current dataset
-                const activeData = chart.config.data.datasets[0].data;
-                const total = activeData.reduce((a, b) => a + b, 0);
-                const text = "RM " + total.toLocaleString(); // Formats 1000 as 1,000
-
-                const fontSize = (height / 160).toFixed(2);
-                ctx.font = `${fontSize}em sans-serif`; // Added bold for a more modern look
-                ctx.textBaseline = "middle";
-                ctx.fillStyle = "#676767"; 
-
-                const textX = Math.round((width - ctx.measureText(text).width) / 2),
-                      textY = height / 2-16;
-                ctx.fillText(text, textX, textY);
-                ctx.save();
-            }
-        }]
-            });
-
-
-    // Function called by your dropdown buttons
-    function updateDoughnut(view, labelText) {
-        // Update data and labels
-        spendingChart.data.labels = spendingData[view].labels;
-        spendingChart.data.datasets[0].data = spendingData[view].data;
-            
-        // Re-render chart with animation
-        spendingChart.update();
-
-        // Update the dropdown button text
-        const btn = document.getElementById('spendingToggle');
-        btn.innerHTML = `${labelText} <i class="bi bi-chevron-down" style="font-size: 0.6rem;"></i>`;
-    }
-</script>
--->
 <script>
 const trendCtx = document.getElementById('trendChart').getContext('2d');
 new Chart(trendCtx, {

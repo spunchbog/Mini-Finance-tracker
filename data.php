@@ -8,7 +8,8 @@ date_default_timezone_set('Asia/Kuala_Lumpur');
 
 require_once 'db_connect.php';
 
-// We join 'transaction' with 'category' to get the category NAME
+// We join 'transaction' (t) and 'category' (c) 
+// to replace the ID number with the actual category name.
 $query = "
     SELECT 
         t.description AS name, 
@@ -17,7 +18,7 @@ $query = "
         t.amount AS amt,
         t.type
     FROM transaction t
-    JOIN category c ON t.category_id = c.category_id
+    INNER JOIN category c ON t.category_id = c.category_id
     ORDER BY t.date DESC
 ";
 
@@ -54,22 +55,22 @@ $buckets = [
 // 4. THE CALCULATION ENGINE
 foreach ($transactions as $trx) {
     $trxTime = strtotime($trx['date']);
-    $amt = abs($trx['amt']);
-    $cat = $trx['cat'];
+    $amt = (float)$trx['amt'];
+    $catName = $trx['cat']; // This comes from the 'category' table join
 
     // We only want to chart EXPENSES (negative amounts)
-    if ($trx['amt'] < 0) {
+    if ($trx['type'] === 'expense') {
         
         // Helper logic to add to bucket if date matches
-        if ($trxTime >= $today)          $buckets['today'][$cat]      = ($buckets['today'][$cat] ?? 0) + $amt;
-        if ($trxTime >= $sevenDaysAgo)   $buckets['7_days'][$cat]     = ($buckets['7_days'][$cat] ?? 0) + $amt;
-        if ($trxTime >= $thirtyDaysAgo)  $buckets['30_days'][$cat]    = ($buckets['30_days'][$cat] ?? 0) + $amt;
-        if ($trxTime >= $ninetyDaysAgo)  $buckets['12_weeks'][$cat]   = ($buckets['12_weeks'][$cat] ?? 0) + $amt;
-        if ($trxTime >= $sixMonthsAgo)   $buckets['6_months'][$cat]   = ($buckets['6_months'][$cat] ?? 0) + $amt;
-        if ($trxTime >= $oneYearAgo)     $buckets['1_year'][$cat]     = ($buckets['1_year'][$cat] ?? 0) + $amt;
-        if ($trxTime >= $fiveYearsAgo)   $buckets['5_years'][$cat]    = ($buckets['5_years'][$cat] ?? 0) + $amt;
-        if ($trxTime >= $thisMonthStart) $buckets['this_month'][$cat] = ($buckets['this_month'][$cat] ?? 0) + $amt;
-        if ($trxTime >= $thisYearStart)  $buckets['this_year'][$cat]  = ($buckets['this_year'][$cat] ?? 0) + $amt;
+        if ($trxTime >= $today)          $buckets['today'][$catName]      = ($buckets['today'][$catName] ?? 0) + $amt;
+        if ($trxTime >= $sevenDaysAgo)   $buckets['7_days'][$catName]     = ($buckets['7_days'][$catName] ?? 0) + $amt;
+        if ($trxTime >= $thirtyDaysAgo)  $buckets['30_days'][$catName]    = ($buckets['30_days'][$catName] ?? 0) + $amt;
+        if ($trxTime >= $ninetyDaysAgo)  $buckets['12_weeks'][$catName]   = ($buckets['12_weeks'][$catName] ?? 0) + $amt;
+        if ($trxTime >= $sixMonthsAgo)   $buckets['6_months'][$catName]   = ($buckets['6_months'][$catName] ?? 0) + $amt;
+        if ($trxTime >= $oneYearAgo)     $buckets['1_year'][$catName]     = ($buckets['1_year'][$catName] ?? 0) + $amt;
+        if ($trxTime >= $fiveYearsAgo)   $buckets['5_years'][$catName]    = ($buckets['5_years'][$catName] ?? 0) + $amt;
+        if ($trxTime >= $thisMonthStart) $buckets['this_month'][$catName] = ($buckets['this_month'][$catName] ?? 0) + $amt;
+        if ($trxTime >= $thisYearStart)  $buckets['this_year'][$catName]  = ($buckets['this_year'][$catName] ?? 0) + $amt;
     }
 }
 
@@ -83,11 +84,24 @@ foreach ($buckets as $range => $categoryList) {
     ];
 }
 
-// 6. CALCULATE HEADER TOTALS (Optional but useful)
+// 6. CALCULATE HEADER TOTALS
 $totalIncome = 0;
 $totalExpense = 0;
+
 foreach ($transactions as $trx) {
-    if ($trx['amt'] > 0) $totalIncome += $trx['amt'];
-    else $totalExpense += abs($trx['amt']);
+    // We convert to float to ensure mathematical accuracy
+    $amount = (float)$trx['amt'];
+
+    // Check the 'type' column instead of the number sign
+    if ($trx['type'] === 'income') {
+        $totalIncome += $amount;
+    } elseif ($trx['type'] === 'expense') {
+        // We use abs() just in case the expense was stored as -50.00
+        // This ensures $totalExpense is always a positive "total"
+        $totalExpense += abs($amount);
+    }
 }
+
+// Calculate Balance
+$totalBalance = $totalIncome - $totalExpense;
 ?>
