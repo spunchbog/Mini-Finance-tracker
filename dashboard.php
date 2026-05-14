@@ -43,7 +43,7 @@ require_once 'data.php'; // pulls in variables and calculations
             <div class="col-md-4">
                 <div class="card p-3 shadow-sm border-0" style="border-left: 5px solid var(--border) !important;">
                     <h6 class="text-muted">Total Balance</h6>
-                    <h3>RM <?= number_format($totalIncome - $totalExpense, 2) ?></h3>
+                    <h3>RM <?= number_format($currentBalance, 2) ?></h3>
                 </div>
             </div>
             <div class="col-md-4">
