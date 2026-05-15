@@ -1,49 +1,59 @@
 <?php
-include('header.php');
 include('db_connect.php');
 
+// logic to reset the demo user via the button link
+if (isset($_GET['reset_demo'])) {
+    mysqli_query($conn, "UPDATE user SET initial_capital = 0, setup_complete = 0 WHERE user_id = '1'");
+    header("Location: InitialPage.php");
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // 1. Sanitize user inputs
-    $email    = mysqli_real_escape_string($conn, $_POST['email']);
-    $user_id  = mysqli_real_escape_string($conn, $_POST['user_id']);
-    $password = $_POST['password']; 
+    // Sanitize user inputs
+    $username = mysqli_real_escape_string($condb, $_POST['username']);
+    $user_id  = mysqli_real_escape_string($condb, $_POST['user_id']);
+    
+    // We don't sanitize the password because hashing handles it securely
+    $plain_password = $_POST['password'];
 
+    # Data validation: Numeric check
+    if (!is_numeric($user_id) ) {
+        die("<script>
+            alert('Please enter a valid numeric user ID');
+            location.href='signup.php';
+        </script>");
+    }
 
-    // 2. Data validation
-    if (!is_numeric($user_id)) {
-        echo "<script>alert('Please enter a valid numeric user ID'); location.href='signup.php';</script>";
-        exit();
-    }
-    if (strlen($email) < 5) {
-        echo "<script>alert('Email must be at least 5 characters'); location.href='signup.php';</script>";
-        exit();
-    }
+    # Data validation: Ensure username isn't too short
     if (strlen($user_id) < 3) {
-        echo "<script>alert('User ID must be at least 3 characters'); location.href='signup.php';</script>";
-        exit();
+        die("<script>
+            alert('User ID must be at least 3 characters');
+            location.href='signup.php';
+        </script>");
     }
 
-    // 3. Check if User ID already exists
-    $sql_check = "SELECT user_id FROM user WHERE user_id='$user_id'";
-    $result = mysqli_query($conn, $sql_check);
+    # Check if User ID already exists
+    $sql_check = "SELECT user_id FROM user WHERE user_id='$user_id' LIMIT 1";
+    $result = mysqli_query($condb, $sql_check);
     
     if (mysqli_num_rows($result) > 0) {
-        echo "<script>alert('User ID already exists'); location.href='signup.php';</script>";
-        exit();
+        echo "<script>alert('User ID already exists. Please choose another.'); location.href='signup.php';</script>";
+        exit;
     }
 
-    // 4. Hash password
-    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+    // 1. PASSWORD HASHING
+    // This turns the plain password into a secure 60+ character string
+    $hashed_password = password_hash($plain_password, PASSWORD_DEFAULT);
 
     // 2. Save user data with the HASHED password
     $query = "INSERT INTO user (username, user_id, password, role) 
               VALUES ('$username', '$user_id', '$hashed_password', 'user')";
 
     if (mysqli_query($condb, $query)) {
-        echo "<script>
-            alert('User Registered Successfully');
-            location.href='login.php';
-            </script>";
+    echo "<script>
+        alert('User Registered Successfully! Redirecting to setup...');
+        location.href='InitialPage.php'; // Change from login.php to InitialPage.php
+        </script>";
     } else {
         echo "<script>alert('Registration failed. Please try again.');</script>";
         // Useful for debugging during development:
@@ -95,7 +105,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </table>
     </form>
 </div>
+<div class="mt-3">
+    <a href="signup.php?reset_demo=1" class="btn btn-outline-primary shadow-sm">
+        <i class="bi bi-gear-fill"></i> Reset & Test Setup Flow
+    </a>
+</div>
 </body>
 </html>
 
-<?php include('footer.php'); ?>
