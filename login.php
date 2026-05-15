@@ -1,5 +1,6 @@
 <?php
 session_start();
+include('header.php');
 include('db_connect.php');
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -9,16 +10,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $err = "<p style='color:red;'>Please fill in all fields.</p>";
     } else {
         // Sanitize User ID (Password doesn't need escaping if using password_verify)
-        $user_id = mysqli_real_escape_string($connb, $_POST['user_id']);
+        $user_id = mysqli_real_escape_string($conn, $_POST['user_id']);
         $password_attempt = $_POST['password'];
 
         // 2. Fetch user data by ID only
         // We don't check the password in the SQL query anymore
-        $query = "SELECT user_id, username, role, password 
-                  FROM user 
-                  WHERE user_id = '$user_id' LIMIT 1";
+        $query = "SELECT user_id, role, password 
+              FROM user 
+              WHERE user_id = '$user_id' LIMIT 1";
         
-        $result = mysqli_query($connb, $query);
+        $result = mysqli_query($conn, $query);
 
         if (mysqli_num_rows($result) == 1) {
             $row = mysqli_fetch_array($result);
@@ -32,9 +33,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 
                 $_SESSION['user_id'] = $row['user_id'];
                 $_SESSION['role'] = $row['role'];
-                $_SESSION['username'] = $row['username'];
 
-                echo "<script>alert('Login successful!'); window.location.href='index.php';</script>";
+                if ($_SESSION['role'] === 'admin') {
+                    echo "<script>alert('Login successful!'); window.location.href='user-management.php';</script>";
+                } else {
+                    echo "<script>alert('Login successful!'); window.location.href='dashboard.html';</script>";
+                }
                 exit;
             } else {
                 $err = "<p style='color:red;'>Invalid User ID or Password.</p>";
@@ -46,26 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="en">    
-<head>  
-    <meta charset="UTF-8">
-    <title>FinTrack Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-<div id="wrapper" class="d-flex vh-100 w-100" style="overflow: hidden;"> 
-    <?php include 'sidebar.php'; ?>
-    </div>
-
-    <!-- Main Content Area -->
-<div id="page-content-wrapper" class="flex-grow-1 d-flex flex-column p-4" style="overflow: hidden;">
-    <header class="mb-3" style="flex: 0 1 auto;">
+<div class="login-container">
     <h3>User Login</h3>
-    </header>
     <p>Please complete the information below to access FinTrack</p>
+
     <form action='' method='POST'>
         <table border='0'>
             <tr>
@@ -86,5 +74,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <?php if (!empty($err)) echo $err; ?>
     </form>
 </div>
-</body>
-</html>
+
+<?php include('footer.php'); ?>
