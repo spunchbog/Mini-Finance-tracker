@@ -102,8 +102,41 @@ foreach ($transactions as $trx) {
     }
 }
 
-// Calculate Balance
-$totalBalance = $totalIncome - $totalExpense;
+
+// 1. Get the last 6 months (e.g., ["Dec", "Jan", "Feb", "Mar", "Apr", "May"])
+$trendLabels = [];
+$trendIncome = [];
+$trendExpense = [];
+
+for ($i = 5; $i >= 0; $i--) {
+    $monthKey = date('Y-m', strtotime("-$i months")); // e.g., "2026-05"
+    $monthLabel = date('M', strtotime("-$i months")); // e.g., "May"
+    
+    $trendLabels[] = $monthLabel;
+    $trendIncome[$monthKey] = 0;
+    $trendExpense[$monthKey] = 0;
+}
+
+// 2. Loop through transactions and sum them up by month/type
+foreach ($transactions as $trx) {
+    $trxMonth = date('Y-m', strtotime($trx['date'])); // e.g., "2026-05"
+    
+    // If the transaction month exists in our 6-month window
+    if (isset($trendIncome[$trxMonth])) {
+        $amt = (float)$trx['amt'];
+        
+        if ($trx['type'] === 'income') {
+            $trendIncome[$trxMonth] += $amt;
+        } else {
+            $trendExpense[$trxMonth] += abs($amt);
+        }
+    }
+}
+
+// 3. Convert to simple arrays for Chart.js
+$finalTrendIncome = array_values($trendIncome);
+$finalTrendExpense = array_values($trendExpense);
+
 
 // 7. FETCH INITIAL CAPITAL
 // Using the PDO connection already established in your data.php
