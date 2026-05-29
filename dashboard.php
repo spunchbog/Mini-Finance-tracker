@@ -3,16 +3,13 @@ session_start();
 include('db_connect.php');
 
 // TEMPORARY: Force User 1
-$user_id = 1;
+$user_id = 1111;
 
 // Check if setup is done
 $check = mysqli_query($conn, "SELECT setup_complete FROM user WHERE user_id = $user_id");
 $user = mysqli_fetch_assoc($check);
 
-if ($user['setup_complete'] == 0) {
-    header("Location: InitialPage.php");
-    exit();
-}
+
 
 require_once 'data.php'; // pulls in variables and calculations
 ?>
@@ -29,7 +26,6 @@ require_once 'data.php'; // pulls in variables and calculations
 <body>
 <div id="wrapper" class="d-flex vh-100 w-100" style="overflow: hidden;"> 
     <?php include 'sidebar.php'; ?>
-    </div>
 
     <!-- Main Content Area -->
     <div id="page-content-wrapper" class="flex-grow-1 d-flex flex-column p-4" style="overflow: hidden;">
@@ -55,7 +51,7 @@ require_once 'data.php'; // pulls in variables and calculations
             <div class="col-md-4">
                 <div class="card p-3 shadow-sm border-0" style="border-left: 5px solid var(--danger) !important;">
                     <h6 class="text-muted">Total Expenses</h6>
-                    <h3 style="color: var(--danger);">RM <?= number_format($totalExpense, 2) ?></</h3>
+                    <h3 style="color: var(--danger);">RM <?= number_format($totalExpense, 2) ?></h3>
                 </div>
             </div>
         </div>
