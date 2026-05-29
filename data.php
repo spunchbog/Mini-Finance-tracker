@@ -174,32 +174,23 @@ $thisWeekStmt = $pdo->query("
       AND date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
 ");
 $thisWeekTotal = (float)($thisWeekStmt->fetch()['total'] ?? 0);
+// 2. Fetch trailing 7-day spending total (This Week)
+$thisWeekStmt = $pdo->query("
+    SELECT SUM(ABS(t.amount)) AS total 
+    FROM transaction t
+    WHERE t.type = 'expense' 
+      AND t.date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+");
+$thisWeekTotal = (float)($thisWeekStmt->fetch()['total'] ?? 0);
 
-// 2. Total spent between 14 days ago and 7 days ago (Last Week)
+
+// 3. Fetch preceding 7-day spending total (Last Week)
 $lastWeekStmt = $pdo->query("
-    SELECT SUM(ABS(amount)) AS total 
-    WHERE type = 'expense' 
-      AND date >= DATE_SUB(CURDATE(), INTERVAL 14 DAY) 
-      AND date < DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+    SELECT SUM(ABS(t.amount)) AS total 
+    FROM transaction t
+    WHERE t.type = 'expense' 
+      AND t.date >= DATE_SUB(CURDATE(), INTERVAL 14 DAY) 
+      AND t.date < DATE_SUB(CURDATE(), INTERVAL 7 DAY)
 ");
 $lastWeekTotal = (float)($lastWeekStmt->fetch()['total'] ?? 0);
-
-$insightMessage = "No spending data from last week to compare.";
-
-if ($lastWeekTotal > 0) {
-    // Percentage Change Formula: ((New - Old) / Old) * 100
-    $percentageChange = (($thisWeekTotal - $lastWeekTotal) / $lastWeekTotal) * 100;
-    $roundedPercent = round(abs($percentageChange));
-
-    if ($percentageChange > 0) {
-        $insightMessage = "You spent <span class='text-danger'>{$roundedPercent}% more</span> this week compared to last week.";
-    } elseif ($percentageChange < 0) {
-        $insightMessage = "You spent <span class='text-success'>{$roundedPercent}% less</span> this week compared to last week.";
-    } else {
-        $insightMessage = "Your spending this week matches exactly with last week.";
-    }
-} elseif ($thisWeekTotal > 0 && $lastWeekTotal == 0) {
-    // If they spent money this week but nothing last week
-    $insightMessage = "You have started tracking new expenses this week.";
-}
 ?>
