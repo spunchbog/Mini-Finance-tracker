@@ -214,4 +214,12 @@ if ($lastWeekTotal > 0) {
     // This catches the exact scenario causing your bug!
     $insightMessage = "No expenses recorded in the last 14 days to analyze.";
 }
+
+//savings rate calculation
+$savingsRate = 0;
+if ($totalIncome > 0) {
+    $netSavings = $totalIncome - $totalExpense;
+    $savingsRate = round(($netSavings / $totalIncome) * 100);
+}
+
 ?>

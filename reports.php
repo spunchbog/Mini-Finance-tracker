@@ -46,4 +46,21 @@ require_once 'data.php'; // pulls in variables and calculations
             <?php echo $insightMessage; ?>
         </div>
     </div>
+    <div class="card p-3 shadow-sm border-0 mb-4 text-center">
+    <h6 class="text-muted small fw-bold text-uppercase">Net Savings Rate</h6>
+    <div class="display-5 fw-bold my-2 <?php echo $savingsRate >= 20 ? 'text-success' : 'text-warning'; ?>">
+        <?php echo $savingsRate; ?>%
+    </div>
+    <p class="text-secondary small mb-0">
+        <?php 
+        if ($savingsRate >= 20) {
+            echo "Excellent! You are beating the healthy 20% savings rule baseline.";
+        } elseif ($savingsRate > 0) {
+            echo "You're saving money, but try to cut down minor expenses to reach 20%.";
+        } else {
+            echo "Alert: Your expenses are outpacing your structural income streams.";
+        }
+        ?>
+    </p>
+</div>
 </body>
