@@ -3,7 +3,7 @@ session_start();
 include('db_connect.php');
 
 // TEMPORARY: Force User 1
-$user_id = 1111;
+$user_id = $_SESSION['user_id'];
 
 // Check if setup is done
 $check = mysqli_query($conn, "SELECT setup_complete FROM user WHERE user_id = $user_id");
@@ -117,6 +117,7 @@ require_once 'data.php'; // pulls in variables and calculations
                             <thead class="table-light sticky-top">
                                 <tr>
                                     <th>Category</th>
+                                    <th>Description</th>
                                     <th>Amount</th>
                                     <th>Date</th>
                                 </tr>
@@ -125,6 +126,7 @@ require_once 'data.php'; // pulls in variables and calculations
                                 <?php foreach ($transactions as $trx): ?>
                                     <tr>
                                         <td><?= $trx['cat'] ?></td>
+                                        <td><?= $trx['description'] ?></td>
                                         <td class="<?php echo ($trx['type'] === 'income') ? 'text-success' : 'text-danger'; ?>">
                                             <?php 
                                                 // Determine the sign based on type
