@@ -8,7 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_transaction'])) {
     $date = $_POST['date'];
     $description = $_POST['description'];
     $type = $_POST['type'];
-    $userid = 1;
+    $userid = $_SESSION['user_id'];
 
     if ($type == 'expense') {
         $category_map = [
