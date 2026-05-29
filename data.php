@@ -103,14 +103,15 @@ foreach ($transactions as $trx) {
 }
 
 
-// 1. Get the last 6 months (e.g., ["Dec", "Jan", "Feb", "Mar", "Apr", "May"])
+// 1. Get the last 6 months (Safe from 31-day month overflows)
 $trendLabels = [];
 $trendIncome = [];
 $trendExpense = [];
 
 for ($i = 5; $i >= 0; $i--) {
-    $monthKey = date('Y-m', strtotime("-$i months")); // e.g., "2026-05"
-    $monthLabel = date('M', strtotime("-$i months")); // e.g., "May"
+    // Crucial Change: Base calculations off the 1st of this month
+    $monthKey   = date('Y-m', strtotime("first day of -$i months")); 
+    $monthLabel = date('M', strtotime("first day of -$i months")); 
     
     $trendLabels[] = $monthLabel;
     $trendIncome[$monthKey] = 0;
