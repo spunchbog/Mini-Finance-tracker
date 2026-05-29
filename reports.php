@@ -34,15 +34,18 @@ require_once 'data.php'; // pulls in variables and calculations
                 <p class="text-muted small mb-0"><?= date('l, d M Y') ?></p>
             </header>
 
-
-    <div class="card p-3 shadow-sm border-0 mb-3">
-        <h6 class="fw-bold text-muted mb-2">💡 Financial Insights</h6>
-        <div class="mb-2">
-            <strong>Highest spending category:</strong> 
-            <span class="badge bg-warning text-dark"><?php echo $highestSpendingCategory; ?></span> 
-            (RM <?php echo number_format($highestSpendingAmount, 2); ?>)
+    <div class="card p-4 shadow-sm border-0 mb-3 bg-white rounded-3">
+        <h5 class="fw-bold text-dark mb-3" style="letter-spacing: -0.3px;">💡 Financial Insights</h5>
+        
+        <div class="mb-3 fs-5 text-dark pb-2 border-bottom border-light">
+            <span class="text-secondary fw-normal">Highest spending category:</span> 
+            <strong class="fw-bold"><?php echo htmlspecialchars($highestSpendingCategory); ?></strong> 
+            <span class="text-danger fw-bold ms-1">
+                (RM <?php echo number_format($highestSpendingAmount, 2); ?>)
+            </span>
         </div>
-        <div class="small text-secondary">
+        
+        <div class="fs-6 text-secondary style-insight-line" style="line-height: 1.6;">
             <?php echo $insightMessage; ?>
         </div>
     </div>
