@@ -193,4 +193,25 @@ $lastWeekStmt = $pdo->query("
       AND t.date < DATE_SUB(CURDATE(), INTERVAL 7 DAY)
 ");
 $lastWeekTotal = (float)($lastWeekStmt->fetch()['total'] ?? 0);
+
+// 4. Calculate comparative percentage change sentence
+$insightMessage = "No spending data from last week to compare."; // Default initial fallback value
+
+if ($lastWeekTotal > 0) {
+    $percentageChange = (($thisWeekTotal - $lastWeekTotal) / $lastWeekTotal) * 100;
+    $roundedPercent = round(abs($percentageChange));
+
+    if ($percentageChange > 0) {
+        $insightMessage = "You spent <span class='text-danger fw-bold'>{$roundedPercent}% more</span> this week compared to last week.";
+    } elseif ($percentageChange < 0) {
+        $insightMessage = "You spent <span class='text-success fw-bold'>{$roundedPercent}% less</span> this week compared to last week.";
+    } else {
+        $insightMessage = "Your spending this week matches exactly with last week.";
+    }
+} elseif ($thisWeekTotal > 0 && $lastWeekTotal == 0) {
+    $insightMessage = "You have started tracking new expenses this week.";
+} else {
+    // This catches the exact scenario causing your bug!
+    $insightMessage = "No expenses recorded in the last 14 days to analyze.";
+}
 ?>

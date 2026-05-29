@@ -18,7 +18,7 @@ require_once 'data.php'; // pulls in variables and calculations
 <html lang="en">    
 <head>  
     <meta charset="UTF-8">
-    <title>FinTrack Dashboard</title>
+    <title>FinTrack Reports</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -30,7 +30,7 @@ require_once 'data.php'; // pulls in variables and calculations
         <!-- Main Content Area -->
         <div id="page-content-wrapper" class="flex-grow-1 d-flex flex-column p-4" style="overflow: hidden;">
             <header class="mb-3" style="flex: 0 1 auto;">
-                <h2>Dashboard</h2>
+                <h2>Reports</h2>
                 <p class="text-muted small mb-0"><?= date('l, d M Y') ?></p>
             </header>
 
