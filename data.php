@@ -147,4 +147,59 @@ $initialCapital = (float)($userData['initial_capital'] ?? 0);
 
 // New Correct Balance calculation
 $currentBalance = $initialCapital + $totalIncome - $totalExpense;
+
+
+//For Reports Financial Insights Feature
+// Fetch the top spending category
+$topCatStmt = $pdo->query("
+    SELECT c.name AS category_name, SUM(ABS(t.amount)) AS total_spent
+    FROM transaction t
+    JOIN category c ON t.category_id = c.category_id
+    WHERE t.type = 'expense'
+    GROUP BY t.category_id
+    ORDER BY total_spent DESC
+    LIMIT 1
+");
+$topCategoryData = $topCatStmt->fetch();
+
+// Store values for layout display
+$highestSpendingCategory = $topCategoryData['category_name'] ?? 'None';
+$highestSpendingAmount = (float)($topCategoryData['total_spent'] ?? 0);
+
+// 1. Total spent in the last 7 days (This Week)
+$thisWeekStmt = $pdo->query("
+    SELECT SUM(ABS(amount)) AS total 
+    FROM transaction 
+    WHERE type = 'expense' 
+      AND date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+");
+$thisWeekTotal = (float)($thisWeekStmt->fetch()['total'] ?? 0);
+
+// 2. Total spent between 14 days ago and 7 days ago (Last Week)
+$lastWeekStmt = $pdo->query("
+    SELECT SUM(ABS(amount)) AS total 
+    WHERE type = 'expense' 
+      AND date >= DATE_SUB(CURDATE(), INTERVAL 14 DAY) 
+      AND date < DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+");
+$lastWeekTotal = (float)($lastWeekStmt->fetch()['total'] ?? 0);
+
+$insightMessage = "No spending data from last week to compare.";
+
+if ($lastWeekTotal > 0) {
+    // Percentage Change Formula: ((New - Old) / Old) * 100
+    $percentageChange = (($thisWeekTotal - $lastWeekTotal) / $lastWeekTotal) * 100;
+    $roundedPercent = round(abs($percentageChange));
+
+    if ($percentageChange > 0) {
+        $insightMessage = "You spent <span class='text-danger'>{$roundedPercent}% more</span> this week compared to last week.";
+    } elseif ($percentageChange < 0) {
+        $insightMessage = "You spent <span class='text-success'>{$roundedPercent}% less</span> this week compared to last week.";
+    } else {
+        $insightMessage = "Your spending this week matches exactly with last week.";
+    }
+} elseif ($thisWeekTotal > 0 && $lastWeekTotal == 0) {
+    // If they spent money this week but nothing last week
+    $insightMessage = "You have started tracking new expenses this week.";
+}
 ?>
