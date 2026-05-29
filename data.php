@@ -12,7 +12,7 @@ require_once 'db_connect.php';
 // to replace the ID number with the actual category name.
 $query = "
     SELECT 
-        t.description AS name, 
+        t.description AS description, 
         c.name AS cat, 
         t.date, 
         t.amount AS amt,
