@@ -84,45 +84,104 @@ foreach ($buckets as $range => $categoryList) {
     ];
 }
 
-// 6. CALCULATE HEADER TOTALS
+// ==========================================
+// 6. CALCULATE HEADER TOTALS (LOOP DRIVEN)
+// ==========================================
+
 $totalIncome = 0;
 $totalExpense = 0;
 
+// Read the user selection from the dropdown (default to monthly)
+$viewFilter = isset($_GET['view']) ? $_GET['view'] : 'monthly';
+
+// Calculate the precise timestamp for Monday of this week (for the "This Week" option)
+$mondayThisWeek = strtotime('monday this week 00:00:00');
+
 foreach ($transactions as $trx) {
-    // We convert to float to ensure mathematical accuracy
+    $trxTime = strtotime($trx['date']);
     $amount = (float)$trx['amt'];
 
-    // Check the 'type' column instead of the number sign
+    // Dynamic Filter Selector Logic
+    if ($viewFilter === 'weekly') {
+        // Strict Boundary: Current Calendar Week (Monday to Sunday)
+        if ($trxTime < $mondayThisWeek) {
+            continue;
+        }
+    } elseif ($viewFilter === '7_days') {
+        // Rolling Boundary: Predefined last 7 continuous days
+        if ($trxTime < $sevenDaysAgo) {
+            continue;
+        }
+    } elseif ($viewFilter === '30_days') {
+        // Rolling Boundary: Predefined last 30 continuous days
+        if ($trxTime < $thirtyDaysAgo) {
+            continue;
+        }
+    } else {
+        // Monthly View (Default): Current Calendar Month
+        if ($trxTime < $thisMonthStart) {
+            continue;
+        }
+    }
+
+    // Accumulate metrics if the row passed the timeline bounds filter check
     if ($trx['type'] === 'income') {
         $totalIncome += $amount;
     } elseif ($trx['type'] === 'expense') {
-        // We use abs() just in case the expense was stored as -50.00
-        // This ensures $totalExpense is always a positive "total"
         $totalExpense += abs($amount);
     }
 }
 
+// Calculate total balance metrics live
+$currentBalance = $totalIncome - $totalExpense;
 
-// 1. Get the last 6 months (Safe from 31-day month overflows)
+// ====================================================================
+// 1. DYNAMIC TREND TIMELINE GENERATOR (Starts from first real data)
+// ====================================================================
+
 $trendLabels = [];
 $trendIncome = [];
 $trendExpense = [];
 
-for ($i = 5; $i >= 0; $i--) {
-    // Crucial Change: Base calculations off the 1st of this month
-    $monthKey   = date('Y-m', strtotime("first day of -$i months")); 
-    $monthLabel = date('M', strtotime("first day of -$i months")); 
+if (!empty($transactions)) {
+    // A. Find the oldest transaction date in your database array
+    // Since your query orders by date DESC, the last item in the array is the oldest!
+    $oldestTransaction = end($transactions);
+    $startDateStr = $oldestTransaction['date'];
     
-    $trendLabels[] = $monthLabel;
-    $trendIncome[$monthKey] = 0;
-    $trendExpense[$monthKey] = 0;
+    // B. Create actual DateTime objects for the start month and the current month
+    $startDateTime   = new DateTime(date('Y-m-01', strtotime($startDateStr)));
+    $currentDateTime = new DateTime(date('Y-m-01')); // Today's month
+    
+    // C. Loop forward month-by-month from the first data point to today
+    while ($startDateTime <= $currentDateTime) {
+        $monthKey   = $startDateTime->format('Y-m'); // e.g., "2026-02"
+        $monthLabel = $startDateTime->format('M');   // e.g., "Feb"
+        
+        $trendLabels[] = $monthLabel;
+        $trendIncome[$monthKey] = 0;
+        $trendExpense[$monthKey] = 0;
+        
+        // Move our loop pointer forward by exactly 1 month
+        $startDateTime->modify('+1 month');
+    }
+} else {
+    // Fallback if the database table is completely empty
+    for ($i = 5; $i >= 0; $i--) {
+        $monthKey   = date('Y-m', strtotime("first day of -$i months"));
+        $monthLabel = date('M', strtotime("first day of -$i months"));
+        $trendLabels[] = $monthLabel;
+        $trendIncome[$monthKey] = 0;
+        $trendExpense[$monthKey] = 0;
+    }
 }
 
-// 2. Loop through transactions and sum them up by month/type
+// ====================================================================
+// 2. Loop through transactions and sum them up (KEEP YOUR EXISTING STEP 2)
+// ====================================================================
 foreach ($transactions as $trx) {
-    $trxMonth = date('Y-m', strtotime($trx['date'])); // e.g., "2026-05"
+    $trxMonth = date('Y-m', strtotime($trx['date']));
     
-    // If the transaction month exists in our 6-month window
     if (isset($trendIncome[$trxMonth])) {
         $amt = (float)$trx['amt'];
         
@@ -134,7 +193,10 @@ foreach ($transactions as $trx) {
     }
 }
 
-// 3. Convert to simple arrays for Chart.js
+// ====================================================================
+// 3. Convert to clean arrays for Chart.js (UPDATED TO PRESERVE TIMELINE CHRONOLOGY)
+// ====================================================================
+// Using array_values guarantees the chart matches the forward chronologic sorting of $trendLabels
 $finalTrendIncome = array_values($trendIncome);
 $finalTrendExpense = array_values($trendExpense);
 
@@ -199,13 +261,13 @@ $lastWeekTotal = (float)($lastWeekStmt->fetch()['total'] ?? 0);
 $insightMessage = "No spending data from last week to compare."; // Default initial fallback value
 
 if ($lastWeekTotal > 0) {
-    $percentageChange = (($thisWeekTotal - $lastWeekTotal) / $lastWeekTotal) * 100;
-    $roundedPercent = round(abs($percentageChange));
+    $percentageChange = (($thisWeekTotal - $lastWeekTotal) / $lastWeekTotal);
+    $roundedPercent = round(abs($percentageChange), 2);
 
     if ($percentageChange > 0) {
-        $insightMessage = "You spent <span class='text-danger fw-bold'>{$roundedPercent}% more</span> this week compared to last week.";
+        $insightMessage = "You spent <span class='text-danger fw-bold'>{$roundedPercent}x more</span> this week compared to last week.";
     } elseif ($percentageChange < 0) {
-        $insightMessage = "You spent <span class='text-success fw-bold'>{$roundedPercent}% less</span> this week compared to last week.";
+        $insightMessage = "You spent <span class='text-success fw-bold'>{$roundedPercent}x less</span> this week compared to last week.";
     } else {
         $insightMessage = "Your spending this week matches exactly with last week.";
     }

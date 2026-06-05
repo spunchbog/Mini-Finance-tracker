@@ -3,7 +3,7 @@ session_start();
 include('db_connect.php');
 
 // TEMPORARY: Force User 1
-$user_id = $_SESSION['user_id'];
+$user_id = 1111;
 
 // Check if setup is done
 $check = mysqli_query($conn, "SELECT setup_complete FROM user WHERE user_id = $user_id");
@@ -27,14 +27,36 @@ require_once 'data.php'; // pulls in variables and calculations
 <div id="wrapper" class="d-flex vh-100 w-100" style="overflow: hidden;"> 
     <?php include 'sidebar.php'; ?>
 
-    <!-- Main Content Area -->
     <div id="page-content-wrapper" class="flex-grow-1 d-flex flex-column p-4" style="overflow: hidden;">
-        <header class="mb-3" style="flex: 0 1 auto;">
-            <h2>Dashboard</h2>
-            <p class="text-muted small mb-0"><?= date('l, d M Y') ?></p>
+        
+        <header class="mb-4 d-flex justify-content-between align-items-center" style="flex: 0 1 auto;">
+            
+            <div>
+                <h2 class="mb-0 fw">Dashboard</h2>
+                <p class="text-muted small mb-0"><?= date('l, d M Y') ?></p>
+            </div>
+
+            <div class="dropdown">
+                <button class="btn btn-white border shadow-sm dropdown-toggle fw-semibold" type="button" id="metricsFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    📅 View: <?php 
+                        $currentView = $_GET['view'] ?? 'monthly';
+                        if ($currentView === 'weekly') echo 'This Week (Mon-Sun)';
+                        elseif ($currentView === '7_days') echo 'Last 7 Days';
+                        elseif ($currentView === '30_days') echo 'Last 30 Days';
+                        else echo 'This Month';
+                    ?>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="metricsFilterDropdown">
+                    <li><a class="dropdown-menu-item dropdown-item <?= (!isset($_GET['view']) || $_GET['view'] === 'monthly') ? 'active' : '' ?>" href="?view=monthly">This Month</a></li>
+                    <li><a class="dropdown-menu-item dropdown-item <?= ($_GET['view'] ?? '') === 'weekly' ? 'active' : '' ?>" href="?view=weekly">This Week (Mon-Sun)</a></li>
+                    <li><a class="dropdown-menu-item dropdown-item <?= ($_GET['view'] ?? '') === '7_days' ? 'active' : '' ?>" href="?view=7_days">Last 7 Days</a></li>
+                    <li><a class="dropdown-menu-item dropdown-item <?= ($_GET['view'] ?? '') === '30_days' ? 'active' : '' ?>" href="?view=30_days">Last 30 Days</a></li>
+                </ul>
+            </div>
         </header>
 
         <!-- Top Row: Metric Cards (Stays at the top) -->
+        
         <div class="row mb-3" style="flex: 0 1 auto;">
             <div class="col-md-4">
                 <div class="card p-3 shadow-sm border-0" style="border-left: 5px solid var(--border) !important;">
@@ -107,45 +129,50 @@ require_once 'data.php'; // pulls in variables and calculations
                     </div>
                 </div>
             </div>
-
-            <!-- Right Side: Recent Transactions Table -->
-            <div class="col-12 col-md-7 d-flex flex-column">
-                <div class="card p-3 shadow-sm h-100" style="overflow: hidden;">
-                    <h5 class="mb-3">Recent Transactions</h5>
-                    <div class="table-responsive" style="overflow-y: auto;">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light sticky-top">
-                                <tr>
-                                    <th>Category</th>
-                                    <th>Description</th>
-                                    <th>Amount</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($transactions as $trx): ?>
-                                    <tr>
-                                        <td><?= $trx['cat'] ?></td>
-                                        <td><?= $trx['description'] ?></td>
-                                        <td class="<?php echo ($trx['type'] === 'income') ? 'text-success' : 'text-danger'; ?>">
-                                            <?php 
-                                                // Determine the sign based on type
-                                                $sign = ($trx['type'] === 'income') ? '+' : '-';
-                
-                                                // Echo the sign followed by the absolute amount
-                                                echo $sign . ' RM ' . number_format(abs($trx['amt']), 2); 
-                                            ?>
-                                        </td>
-                                        <td class="text-muted small">
-                                            <?= date('M d, Y', strtotime($trx['date'])) ?>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+<!-- Right Side: Recent Transactions Table -->
+<div class="col-12 col-md-7 d-flex flex-column">
+    <div class="card p-3 shadow-sm h-100" style="overflow: hidden;">
+        <h5 class="mb-3">Recent Transactions</h5>
+        
+        <!-- CHANGED: Added max-height (e.g., 350px or 400px) so it triggers scrolling -->
+        <div class="table-responsive" style="overflow-y: auto; max-height: 500px;">
+            <table class="table table-hover align-middle mb-0">
+                <!-- Added a solid background color to the header so text doesn't bleed through when scrolling underneath -->
+                <thead class="table-light sticky-top" style="z-index: 10; background-color: #f8f9fa;">
+                    <tr>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($transactions)): ?>
+                        <?php foreach ($transactions as $trx): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($trx['cat']) ?></td>
+                                <td><?= htmlspecialchars($trx['description']) ?></td>
+                                <td class="<?php echo ($trx['type'] === 'income') ? 'text-success fw-semibold' : 'text-danger fw-semibold'; ?>">
+                                    <?php 
+                                        $sign = ($trx['type'] === 'income') ? '+' : '-';
+                                        echo $sign . ' RM ' . number_format(abs($trx['amt']), 2); 
+                                    ?>
+                                </td>
+                                <td class="text-muted small">
+                                    <?= date('M d, Y', strtotime($trx['date'])) ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">No recent transactions tracked yet.</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
         </div>
     </div> 
 </div>
