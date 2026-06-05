@@ -3,7 +3,7 @@ session_start();
 include('db_connect.php');
 
 // TEMPORARY: Force User 1
-$userid = $_SESSION['user_id'];
+$user_id = $_SESSION['user_id'];
 
 // Check if setup is done
 $check = mysqli_query($conn, "SELECT setup_complete FROM user WHERE user_id = $user_id");
