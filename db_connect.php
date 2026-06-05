@@ -1,8 +1,8 @@
 <?php
 // db_connect.php
-$host = "localhost";
-$user = "root";
-$pass = "";
+$host = "10.254.84.185";
+$user = "fintracker";
+$pass = "fintrack";
 $dbname = "fintrack";
 $charset = 'utf8mb4';
 
