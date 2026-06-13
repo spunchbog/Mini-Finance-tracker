@@ -2,17 +2,36 @@
 session_start();
 include('db_connect.php');
 
-// TEMPORARY: Force User 1
-$user_id = 1111;
+// 1. DYNAMIC CHECK: Check if a user is actually logged in
+if (!isset($_SESSION['user_id'])) {
+    // If no user session exists, kick them back to the login page so they can't sneak in
+    header("Location: login.php");
+    exit;
+}
 
-// Check if setup is done
+// 2. REMOVED FORCE ID: Grab the true, active logged-in User ID from the session matrix
+$user_id = $_SESSION['user_id'];
+
+// 3. Make sure the role matches their database entry (fallback to user if empty)
+if (empty($_SESSION['role'])) {
+    $_SESSION['role'] = 'user'; 
+}
+
+// 4. Run your setup verification query dynamically using the session's ID
 $check = mysqli_query($conn, "SELECT setup_complete FROM user WHERE user_id = $user_id");
+
+if (!$check) {
+    die("Dashboard Query Failed: " . mysqli_error($conn));
+}
+
 $user = mysqli_fetch_assoc($check);
 
-
-
-require_once 'data.php'; // pulls in variables and calculations
+require_once 'data.php'; // Pulls in timeline arrays, dropdown math, and card totals
 ?>
+
+
+
+
 
 <!DOCTYPE html>
 <html lang="en">    
