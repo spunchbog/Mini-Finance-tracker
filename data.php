@@ -94,8 +94,18 @@ $totalExpense = 0;
 // Read the user selection from the dropdown (default to monthly)
 $viewFilter = isset($_GET['view']) ? $_GET['view'] : 'monthly';
 
-// Calculate the precise timestamp for Monday of this week (for the "This Week" option)
+// --- TIME BOUNDARY CEILINGS & FLOORS ---
+$todayCeiling   = strtotime('today 23:59:59'); // Caps rolling and all-time views at midnight tonight
 $mondayThisWeek = strtotime('monday this week 00:00:00');
+$sundayThisWeek = strtotime('sunday this week 23:59:59');
+$thisMonthEnd   = strtotime('last day of this month 23:59:59');
+
+// Grab and normalize user custom date parameters if available
+$customStartStr = isset($_GET['start']) ? $_GET['start'] . ' 00:00:00' : 'today';
+$customEndStr   = isset($_GET['end'])   ? $_GET['end'] . ' 23:59:59'   : 'today';
+
+$customStart = strtotime($customStartStr);
+$customEnd   = strtotime($customEndStr);
 
 foreach ($transactions as $trx) {
     $trxTime = strtotime($trx['date']);
@@ -103,23 +113,34 @@ foreach ($transactions as $trx) {
 
     // Dynamic Filter Selector Logic
     if ($viewFilter === 'weekly') {
-        // Strict Boundary: Current Calendar Week (Monday to Sunday)
-        if ($trxTime < $mondayThisWeek) {
+        // Calendar Week Window (Mon - Sun)
+        if ($trxTime < $mondayThisWeek || $trxTime > $sundayThisWeek) {
             continue;
         }
     } elseif ($viewFilter === '7_days') {
-        // Rolling Boundary: Predefined last 7 continuous days
-        if ($trxTime < $sevenDaysAgo) {
+        // Rolling 7-Day Window capped at midnight tonight
+        if ($trxTime < $sevenDaysAgo || $trxTime > $todayCeiling) {
             continue;
         }
     } elseif ($viewFilter === '30_days') {
-        // Rolling Boundary: Predefined last 30 continuous days
-        if ($trxTime < $thirtyDaysAgo) {
+        // Rolling 30-Day Window capped at midnight tonight
+        if ($trxTime < $thirtyDaysAgo || $trxTime > $todayCeiling) {
+            continue;
+        }
+    } elseif ($viewFilter === 'all') {
+        // CHANGED: All-Time Window capped at midnight tonight
+        // Skip any transaction that is scheduled for tomorrow or further out in the future
+        if ($trxTime > $todayCeiling) {
+            continue;
+        }
+    } elseif ($viewFilter === 'custom') {
+        // Custom Range Window
+        if ($trxTime < $customStart || $trxTime > $customEnd) {
             continue;
         }
     } else {
-        // Monthly View (Default): Current Calendar Month
-        if ($trxTime < $thisMonthStart) {
+        // Monthly View (Default Calendar Month)
+        if ($trxTime < $thisMonthStart || $trxTime > $thisMonthEnd) {
             continue;
         }
     }
@@ -134,6 +155,68 @@ foreach ($transactions as $trx) {
 
 // Calculate total balance metrics live
 $currentBalance = $totalIncome - $totalExpense;
+
+// ==========================================
+// 7. CALCULATE LIFETIME GRAND TOTALS
+// ==========================================
+$lifetimeIncome = 0;
+$lifetimeExpense = 0;
+
+foreach ($transactions as $trx) {
+    $amount = (float)$trx['amt'];
+
+    if ($trx['type'] === 'income') {
+        $lifetimeIncome += $amount;
+    } elseif ($trx['type'] === 'expense') {
+        $lifetimeExpense += abs($amount);
+    }
+}
+
+// ==========================================
+// 8. GENERATE SYNCED DATA FOR DOUGHNUT CHART
+// ==========================================
+$chartDataRaw = [];
+
+foreach ($transactions as $trx) {
+    $trxTime = strtotime($trx['date']);
+    $amount = (float)$trx['amt'];
+
+    // ONLY process expense items for the spending overview chart
+    if ($trx['type'] !== 'expense') {
+        continue;
+    }
+
+    // RUN THE EXACT SAME TIMELINE FILTER BOUNDARIES
+    if ($viewFilter === 'weekly') {
+        if ($trxTime < $mondayThisWeek || $trxTime > $sundayThisWeek) continue;
+    } elseif ($viewFilter === '7_days') {
+        if ($trxTime < $sevenDaysAgo || $trxTime > $todayCeiling) continue;
+    } elseif ($viewFilter === '30_days') {
+        if ($trxTime < $thirtyDaysAgo || $trxTime > $todayCeiling) continue;
+    } elseif ($viewFilter === 'all') {
+        if ($trxTime > $todayCeiling) continue;
+    } elseif ($viewFilter === 'custom') {
+        if ($trxTime < $customStart || $trxTime > $customEnd) continue;
+    } else {
+        // Default: Monthly
+        if ($trxTime < $thisMonthStart || $trxTime > $thisMonthEnd) continue;
+    }
+
+    // Accumulate total values organized cleanly by Category keys
+    $categoryName = !empty($trx['cat']) ? trim($trx['cat']) : 'Uncategorized';
+    if (!isset($chartDataRaw[$categoryName])) {
+        $chartDataRaw[$categoryName] = 0;
+    }
+    $chartDataRaw[$categoryName] += abs($amount);
+}
+
+// Split our mapped array into separate index lists for Chart.js labels and datasets
+$chartLabels = array_keys($chartDataRaw);
+$chartValues = array_values($chartDataRaw);
+$chartTotalSpending = array_sum($chartValues);
+
+// Grand total historical balance
+$lifetimeBalance = $lifetimeIncome - $lifetimeExpense;
 
 // ====================================================================
 // 1. DYNAMIC TREND TIMELINE GENERATOR (Starts from first real data)

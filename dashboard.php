@@ -35,14 +35,16 @@ require_once 'data.php'; // pulls in variables and calculations
                 <h2 class="mb-0 fw">Dashboard</h2>
                 <p class="text-muted small mb-0"><?= date('l, d M Y') ?></p>
             </div>
-
+        
             <div class="dropdown">
                 <button class="btn btn-white border shadow-sm dropdown-toggle fw-semibold" type="button" id="metricsFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    📅 View: <?php 
+                    View: <?php 
                         $currentView = $_GET['view'] ?? 'monthly';
                         if ($currentView === 'weekly') echo 'This Week (Mon-Sun)';
                         elseif ($currentView === '7_days') echo 'Last 7 Days';
                         elseif ($currentView === '30_days') echo 'Last 30 Days';
+                        elseif ($currentView === 'all') echo 'All-Time';
+                        elseif ($currentView === 'custom') echo 'Custom Range';
                         else echo 'This Month';
                     ?>
                 </button>
@@ -51,9 +53,41 @@ require_once 'data.php'; // pulls in variables and calculations
                     <li><a class="dropdown-menu-item dropdown-item <?= ($_GET['view'] ?? '') === 'weekly' ? 'active' : '' ?>" href="?view=weekly">This Week (Mon-Sun)</a></li>
                     <li><a class="dropdown-menu-item dropdown-item <?= ($_GET['view'] ?? '') === '7_days' ? 'active' : '' ?>" href="?view=7_days">Last 7 Days</a></li>
                     <li><a class="dropdown-menu-item dropdown-item <?= ($_GET['view'] ?? '') === '30_days' ? 'active' : '' ?>" href="?view=30_days">Last 30 Days</a></li>
+                    <li><a class="dropdown-menu-item dropdown-item <?= ($_GET['view'] ?? '') === 'all' ? 'active' : '' ?>" href="?view=all">All-Time</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-menu-item dropdown-item <?= ($_GET['view'] ?? '') === 'custom' ? 'active' : '' ?>" href="#" data-bs-toggle="modal" data-bs-target="#customDateModal">Custom Range...</a></li>
                 </ul>
             </div>
         </header>
+<div class="modal fade" id="customDateModal" tabindex="-1" aria-labelledby="customDateModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="customDateModalLabel">Select Custom Range</h5>
+        <button type="button" class="btn-close" data-bs-shadow="none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="GET" action="">
+        <input type="hidden" name="view" value="custom">
+        <div class="modal-body py-4">
+            <div class="row">
+                <div class="col-6">
+                    <label class="form-label text-muted small fw-bold">START DATE</label>
+                    <input type="date" name="start" class="form-control" value="<?= $_GET['start'] ?? date('Y-m-01') ?>" required>
+                </div>
+                <div class="col-6">
+                    <label class="form-label text-muted small fw-bold">END DATE</label>
+                    <input type="date" name="end" class="form-control" value="<?= $_GET['end'] ?? date('Y-m-d') ?>" required>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer bg-light border-top-0">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm px-3 fw-semibold">Apply Range</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
         <!-- Top Row: Metric Cards (Stays at the top) -->
         
@@ -84,12 +118,9 @@ require_once 'data.php'; // pulls in variables and calculations
             <div class="col-12 col-md-5 d-flex flex-column" style="gap: 15px;">
                 <div class="card p-3 flex-grow-1 shadow-sm">
                     <h6 class="mb-0">Spending Overview</h6>
-                    <div class="dropdown">
-                        <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 dropdown-toggle shadow-sm"
-                                type="button" id="rangeToggle" data-bs-toggle="dropdown">
-                            This Month
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg" style="max-height: 300px; overflow-y: auto;">
+
+                    <!--
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg" style="max-height: 300px; overflow-y: auto;">
                             <li><h6 class="dropdown-header">Standard</h6></li>
                             <li><a class="dropdown-item" href="#" onclick="applyFilter('today', 'Today')">Today</a></li>
                             <li><a class="dropdown-item" href="#" onclick="applyFilter('this_week', 'This Week')">This Week</a></li>
@@ -107,9 +138,8 @@ require_once 'data.php'; // pulls in variables and calculations
                 
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-primary fw-bold" href="#" onclick="showCustomPicker()">Custom Range...</a></li>
-                        </ul>
-					</div>
-                
+                        </ul> -->
+                    <!--
                 <div id="customDateContainer" class="d-none bg-light p-2 rounded mb-3 border">
                         <div class="d-flex gap-2 align-items-center">
                             <input type="date" id="startDate" class="form-control form-control-sm">
@@ -117,7 +147,7 @@ require_once 'data.php'; // pulls in variables and calculations
                             <input type="date" id="endDate" class="form-control form-control-sm">
                             <button class="btn btn-primary btn-sm" onclick="applyCustomRange()">Go</button>
                         </div>
-                    </div>
+                    </div> -->
                     <div style="height: 200px; width: 100%; margin: 0 auto; position: relative; flex-grow: 1;">
                         <canvas id="spendingChart"></canvas>
                     </div>
@@ -132,7 +162,43 @@ require_once 'data.php'; // pulls in variables and calculations
 <!-- Right Side: Recent Transactions Table -->
 <div class="col-12 col-md-7 d-flex flex-column">
     <div class="card p-3 shadow-sm h-100" style="overflow: hidden;">
-        <h5 class="mb-3">Recent Transactions</h5>
+        
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
+            <h5 class="mb-0">Recent Transactions</h5>
+            
+            <div class="d-flex align-items-center gap-2 style-wrapper" style="max-width: 420px; width: 100%;">
+                
+                <select id="tableTypeFilter" class="form-select form-select-sm fw-semibold text-muted shadow-sm" style="width: 130px;">
+                    <option value="all">All Types</option>
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
+                </select>
+                <select id="tableCategoryFilter" class="form-select form-select-sm fw-semibold text-muted shadow-sm" style="width: 135px;">
+                    <option value="all">All Categories</option>
+                    <?php 
+                    // Dynamically extract unique categories present in your transaction stack
+                    $uniqueCats = array_unique(array_column($transactions, 'cat'));
+                    sort($uniqueCats);
+                    foreach ($uniqueCats as $catName): 
+                        if (!empty($catName)):
+                    ?>
+                        <option value="<?= htmlspecialchars(strtolower(trim($catName))) ?>"><?= htmlspecialchars($catName) ?></option>
+                    <?php 
+                        endif;
+                    endforeach; 
+                    ?>
+                </select>
+
+                <div class="input-group shadow-sm flex-grow-1">
+                    <span class="input-group-text bg-white border-end-0 text-muted py-1 px-2">🔍</span>
+                    <input type="text" id="tableSearchInput" class="form-control border-start-0 ps-0 fw-medium form-control-sm" placeholder="Search...">
+                </div>
+                
+            </div>
+        </div>
+
+
+
         
         <!-- CHANGED: Added max-height (e.g., 350px or 400px) so it triggers scrolling -->
         <div class="table-responsive" style="overflow-y: auto; max-height: 500px;">
@@ -146,13 +212,44 @@ require_once 'data.php'; // pulls in variables and calculations
                         <th>Date</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="transactionTableBody">
                     <?php if (!empty($transactions)): ?>
-                        <?php foreach ($transactions as $trx): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($trx['cat']) ?></td>
-                                <td><?= htmlspecialchars($trx['description']) ?></td>
-                                <td class="<?php echo ($trx['type'] === 'income') ? 'text-success fw-semibold' : 'text-danger fw-semibold'; ?>">
+                        <?php 
+                            foreach ($transactions as $trx): 
+                                // 1. Convert the database timestamp into a comparable UNIX number
+                                $trxTime = strtotime($trx['date']);
+                                
+                                // 2. RUN THE SAME EXACT DATE VALIDATION RULES AS THE HEADER CARDS
+                                if ($viewFilter === 'weekly') {
+                                    if ($trxTime < $mondayThisWeek || $trxTime > $sundayThisWeek) {
+                                        continue; // Skip this row if it's out of bounds
+                                    }
+                                } elseif ($viewFilter === '7_days') {
+                                    if ($trxTime < $sevenDaysAgo || $trxTime > $todayCeiling) {
+                                        continue;
+                                    }
+                                } elseif ($viewFilter === '30_days') {
+                                    if ($trxTime < $thirtyDaysAgo || $trxTime > $todayCeiling) {
+                                        continue;
+                                    }
+                                } elseif ($viewFilter === 'all') {
+                                    if ($trxTime > $todayCeiling) {
+                                        continue;
+                                    }
+                                } elseif ($viewFilter === 'custom') {
+                                    if ($trxTime < $customStart || $trxTime > $customEnd) {
+                                        continue;
+                                    }
+                                } else {
+                                    // Default: Monthly View
+                                    if ($trxTime < $thisMonthStart || $trxTime > $thisMonthEnd) {
+                                        continue;
+                                    }
+                                }
+                            ?>
+                            <tr data-type="<?= htmlspecialchars($trx['type']) ?>" data-category="<?= htmlspecialchars(strtolower(trim($trx['cat']))) ?>">                                <td class="trx-category"><?= htmlspecialchars($trx['cat']) ?></td>
+                                <td class="trx-description"><?= htmlspecialchars($trx['description']) ?></td>
+                                <td class="trx-type <?php echo ($trx['type'] === 'income') ? 'text-success fw-semibold' : 'text-danger fw-semibold'; ?>">
                                     <?php 
                                         $sign = ($trx['type'] === 'income') ? '+' : '-';
                                         echo $sign . ' RM ' . number_format(abs($trx['amt']), 2); 
@@ -247,20 +344,14 @@ new Chart(trendCtx, {
 </script>
 <script>
 // 1. Pull the pre-calculated data from data.php
-const allSpendingData = <?php echo json_encode($finalChartData); ?>;
-
-// 2. Setup the Initial View (Default to 'this_month')
-const initialData = allSpendingData['this_month'];
-
 const ctx = document.getElementById('spendingChart').getContext('2d');
-
-// 3. Create the Chart Instance
-const spendingChart = new Chart(ctx, {
+const spendingOverviewChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
-        labels: initialData.labels,
+        labels: <?php echo json_encode($chartLabels); ?>,
         datasets: [{
-            data: initialData.data,
+            // 2. Inject the filtered summary value metrics data matrix
+            data: <?php echo json_encode($chartValues); ?>,
             backgroundColor: [
                 '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796'
             ],
@@ -270,6 +361,7 @@ const spendingChart = new Chart(ctx, {
         }]
     },
     options: {
+        responsive: true,
         maintainAspectRatio: false,
         cutout: '75%', // This creates the "hole" in the middle
         plugins: {
@@ -280,9 +372,70 @@ const spendingChart = new Chart(ctx, {
                     usePointStyle: true,
                     padding: 20,
                     font: { size: 12 }
+                },
+            }
+        },
+        animation: {
+            duration: 1500,     // Time in milliseconds for the animation to finish (e.g., 1.5 seconds)
+            animateRotate: true, // TRUE: The chart spins into existence on initial load
+            animateScale: false  // TRUE: The chart expands outward from the center hole on load
+        }
+    }
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('tableSearchInput');
+    const typeFilter = document.getElementById('tableTypeFilter');
+    const catFilter = document.getElementById('tableCategoryFilter');
+    const tableBody = document.getElementById('transactionTableBody');
+    
+    if (tableBody && searchInput && typeFilter && catFilter) {
+        const tableRows = tableBody.getElementsByTagName('tr');
+
+        function filterTable() {
+            // Read active values across all 3 filter parameters
+            const textKeyword = searchInput.value.toLowerCase().trim();
+            const selectedType = typeFilter.value.toLowerCase();
+            const selectedCat  = catFilter.value.toLowerCase();
+
+            for (let i = 0; i < tableRows.length; i++) {
+                const row = tableRows[i];
+                
+                // Read row data attributes
+                const rowType = row.getAttribute('data-type') ? row.getAttribute('data-type').toLowerCase().trim() : '';
+                const rowCat  = row.getAttribute('data-category') ? row.getAttribute('data-category').toLowerCase().trim() : '';
+                
+                // Read search text components
+                const descElement = row.querySelector('.trx-description');
+                const catElement  = row.querySelector('.trx-category');
+                
+                const descText = descElement ? descElement.textContent.toLowerCase() : '';
+                const catText  = catElement ? catElement.textContent.toLowerCase() : '';
+
+                // --- EVALUATION CHECK MATRIX ---
+                // Condition 1: Matches Text Keyword Search
+                const matchesSearch = descText.includes(textKeyword) || catText.includes(textKeyword);
+                
+                // Condition 2: Matches Type Selection
+                const matchesType = (selectedType === 'all') || (rowType === selectedType);
+                
+                // Condition 3: Matches Category Selection
+                const matchesCategory = (selectedCat === 'all') || (rowCat === selectedCat);
+
+                // Row must pass all three filters simultaneously to remain visible
+                if (matchesSearch && matchesType && matchesCategory) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
                 }
             }
         }
+
+        // Bind logic engine to trigger on input adjustments
+        searchInput.addEventListener('keyup', filterTable);
+        typeFilter.addEventListener('change', filterTable);
+        catFilter.addEventListener('change', filterTable);
     }
 });
 </script>
