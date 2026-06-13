@@ -20,9 +20,6 @@
             <a href='index.php' class="nav-link text-white py-3">Home</a>
             <a href='login.php' class="nav-link text-white py-3">Login</a>
             <a href='signup.php' class="nav-link text-white py-3">Sign Up</a>
-            <a href='transaction.php' class="nav-link text-white py-3">Transactions</a>
-            <a href='dashboard.php' class="nav-link text-white py-3">Dashboard</a>
-            <a href='reports.php' class="nav-link text-white py-3">Reports</a>
         <?php } ?>
     </div>
 </div> 
