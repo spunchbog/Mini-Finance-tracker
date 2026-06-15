@@ -2,11 +2,31 @@
 session_start();
 require_once 'db_connect.php';
 
-$user_id = 1; // Forcing User 1 for the demo
+// Require a logged-in user. If not present, send them to login.
+if (empty($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit();
+}
 
-// If they already finished setup, don't let them stay here
+$user_id = intval($_SESSION['user_id']);
+
+// Query user record and handle possible failures
 $query = mysqli_query($conn, "SELECT setup_complete FROM user WHERE user_id = $user_id");
+if (!$query) {
+    // Query failed - log and redirect to login
+    error_log('InitialPage query failed: ' . mysqli_error($conn));
+    header('Location: login.php');
+    exit();
+}
+
 $user = mysqli_fetch_assoc($query);
+if (!$user) {
+    // No such user - clear session and send to signup/login
+    session_unset();
+    session_destroy();
+    header('Location: signup.php');
+    exit();
+}
 
 if ($user['setup_complete'] == 1) {
     header("Location: dashboard.php");
