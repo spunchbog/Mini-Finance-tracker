@@ -1,8 +1,16 @@
 <?php
-include('header.php');
+session_start();
 include('db_connect.php');
 
-// Handle add/edit category
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    header('Location: login.php');
+    exit();
+}
+
+$edit_mode = false;
+$edit_category_id = '';
+$edit_category_name = '';
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $category = mysqli_real_escape_string($conn, $_POST['category']);
     if (!empty($_POST['category_id'])) {
@@ -15,6 +23,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $sql = "INSERT INTO category (name) VALUES ('$category')";
         mysqli_query($conn, $sql);
     }
+    header('Location: category.php');
+    exit();
+}
+
+if (!empty($_GET['edit']) && is_numeric($_GET['edit'])) {
+    $edit_category_id = intval($_GET['edit']);
+    $result = mysqli_query($conn, "SELECT name FROM category WHERE category_id = $edit_category_id LIMIT 1");
+    if ($result && mysqli_num_rows($result) === 1) {
+        $row = mysqli_fetch_assoc($result);
+        $edit_category_name = $row['name'];
+        $edit_mode = true;
+    }
 }
 
 // Fetch all categories
@@ -24,12 +44,29 @@ if (!$cat_result) {
 }
 ?>
 
-<h2>Category Manager</h2>
-<p>Add or edit "Global Categories" that appear for all users.</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Category Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div id="wrapper" class="d-flex vh-100 w-100" style="overflow: hidden;">
+    <?php include 'sidebar.php'; ?>
+
+    <div id="page-content-wrapper" class="flex-grow-1 d-flex flex-column p-4" style="overflow: hidden;">
+
+        <h2>Category Manager</h2>
+        <p>Add or edit "Global Categories" that appear for all users.</p>
 <form method="POST" action="">
-    <input type="hidden" name="category_id" id="category_id">
-    <input type="text" name="category" id="category" required placeholder="Category Name">
-    <button type="submit">Save Category</button>
+    <input type="hidden" name="category_id" id="category_id" value="<?php echo htmlspecialchars($edit_category_id); ?>">
+    <input type="text" name="category" id="category" required placeholder="Category Name" value="<?php echo htmlspecialchars($edit_category_name); ?>">
+    <button type="submit"><?php echo $edit_mode ? 'Update Category' : 'Save Category'; ?></button>
+    <?php if ($edit_mode): ?>
+        <a href="category.php" class="btn btn-secondary">Cancel</a>
+    <?php endif; ?>
 </form>
 
 <table border="1" cellpadding="8" cellspacing="0">
@@ -45,7 +82,7 @@ if (!$cat_result) {
         <tr>
             <td><?php echo htmlspecialchars($cat['name']); ?></td>
             <td>
-                <button onclick="editCategory('<?php echo $cat['category_id']; ?>', '<?php echo htmlspecialchars($cat['name']); ?>')">Edit</button>
+                <a href="category.php?edit=<?php echo $cat['category_id']; ?>" class="btn btn-outline-primary btn-sm">Edit</a>
             </td>
         </tr>
         <?php endwhile; 
@@ -53,12 +90,6 @@ if (!$cat_result) {
     </tbody>
 </table>
 
-<script>
-function editCategory(id, name) {
-    document.getElementById('category_id').value = id;
-    document.getElementById('category').value = name;
-}
-</script>
-
 <?php include('footer.php'); ?>
+
 
