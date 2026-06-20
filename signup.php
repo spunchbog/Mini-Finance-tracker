@@ -2,33 +2,18 @@
 session_start();
 include('db_connect.php');
 
-// Handle Demo Reset Trigger
-if (isset($_GET['reset_demo'])) {
-    mysqli_query($conn, "UPDATE user SET initial_capital = 0, setup_complete = 0 WHERE user_id = 1111");
-    header("Location: InitialPage.php");
-    exit;
-}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // FIXED: Mapping form 'username' input directly to your database 'email' column field
-    $email    = mysqli_real_escape_string($conn, $_POST['username']); 
-    $user_id  = mysqli_real_escape_string($conn, $_POST['user_id']);
+    // FIXED: Mapping form 'Email' input directly to your database 'email' column field
+    $email    = mysqli_real_escape_string($conn, $_POST['Email']); 
     $plain_password = $_POST['password'];
 
-    if (!is_numeric($user_id)) {
-        die("<script>alert('Please enter a valid numeric user ID'); location.href='signup.php';</script>");
-    }
-
-    if (strlen($user_id) < 3) {
-        die("<script>alert('User ID must be at least 3 characters'); location.href='signup.php';</script>");
-    }
-
-    // FIXED: Checking against 'email' column to see if identifier exists
-    $sql_check = "SELECT user_id FROM user WHERE email='$email' OR user_id='$user_id' LIMIT 1";
+    // Check if email already exists
+    $sql_check = "SELECT user_id FROM user WHERE email='$email' LIMIT 1";
     $result = mysqli_query($conn, $sql_check);
     
     if (mysqli_num_rows($result) > 0) {
-        echo "<script>alert('User ID or Email already exists. Please check inputs.'); location.href='signup.php';</script>";
+        echo "<script>alert('Email already exists. Please use a different email.'); location.href='signup.php';</script>";
         exit;
     }
 
@@ -37,10 +22,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // FIXED: Matching your exact column definitions: user_id, email, password, role, is_verified, initial_capital, setup_complete
     // Setting 'is_verified' to 1 automatically so your new users can log in instantly without an email sender server
-    $query = "INSERT INTO user (user_id, email, password, role, is_verified, initial_capital, setup_complete) 
-              VALUES ('$user_id', '$email', '$hashed_password', 'user', 1, 0.00, 0)";
+    $query = "INSERT INTO user (email, password, role, is_verified, initial_capital, setup_complete) 
+              VALUES ('$email', '$hashed_password', 'user', 1, 0.00, 0)";
 
     if (mysqli_query($conn, $query)) {
+        // Set session so the new user is treated as logged in
+        $new_user_id = mysqli_insert_id($conn);
+        $_SESSION['user_id'] = $new_user_id;
+        $_SESSION['role'] = 'user';
+
         echo "<script>alert('User Registered Successfully! Redirecting to setup...'); location.href='InitialPage.php';</script>";
         exit;
     } else {
@@ -72,12 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <form method='POST' action=''>
             <table border='0'>
                 <tr>
-                    <td>Username:</td>
-                    <td><input type='text' name='username' required></td>
-                </tr>
-                <tr>
-                    <td>User ID (Numbers only):</td>
-                    <td><input type='number' name='user_id' required></td>
+                    <td>Email:</td>
+                    <td><input type='text' name='Email' required></td>
                 </tr>
                 <tr>
                     <td>Password:</td>
@@ -91,11 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </tr>
             </table>
         </form>
-        <div class="mt-3">
-            <a href="signup.php?reset_demo=1" class="btn btn-outline-primary shadow-sm">
-                <i class="bi bi-gear-fill"></i> Reset & Test Setup Flow
-            </a>
-        </div>
+        
     </div>
 
 </div>
