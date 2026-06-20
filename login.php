@@ -4,22 +4,35 @@ include('db_connect.php');
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-    if (empty($_POST['user_id']) || empty($_POST['password'])) {
+    if (empty($_POST['Email']) || empty($_POST['password'])) {
         $err = "<p style='color:red;'>Please fill in all fields.</p>";
     } else {
-        $user_id = mysqli_real_escape_string($conn, $_POST['user_id']);
+        $email = mysqli_real_escape_string($conn, $_POST['Email']);
         $password_attempt = $_POST['password'];
 
         $query = "SELECT user_id, role, password 
                   FROM user 
-                  WHERE user_id = '$user_id' LIMIT 1";
+                  WHERE email = '$email' LIMIT 1";
         
         $result = mysqli_query($conn, $query);
 
         if (mysqli_num_rows($result) == 1) {
             $row = mysqli_fetch_array($result);
             
-            if (password_verify($password_attempt, $row['password'])) {
+            $stored_password = $row['password'];
+            $valid_password = false;
+
+            if (password_verify($password_attempt, $stored_password)) {
+                $valid_password = true;
+            } elseif ($stored_password === $password_attempt) {
+                // Legacy plaintext password support for old admin accounts
+                $valid_password = true;
+                $new_hash = password_hash($password_attempt, PASSWORD_DEFAULT);
+                $escaped_hash = mysqli_real_escape_string($conn, $new_hash);
+                mysqli_query($conn, "UPDATE user SET password = '$escaped_hash' WHERE user_id = " . intval($row['user_id']));
+            }
+
+            if ($valid_password) {
                 session_regenerate_id();
                 
                 $_SESSION['user_id'] = $row['user_id'];
@@ -32,10 +45,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 }
                 exit;
             } else {
-                $err = "<p style='color:red;'>Invalid User ID or Password.</p>";
+                $err = "<p style='color:red;'>Invalid Email or Password.</p>";
             }
         } else {
-            $err = "<p style='color:red;'>Invalid User ID or Password.</p>";
+            $err = "<p style='color:red;'>Invalid Email or Password.</p>";
         }
     }
 }
@@ -64,8 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <form action='' method='POST'>
             <table border='0'>
                 <tr>
-                    <td>User ID</td>
-                    <td><input type="text" name="user_id" required></td>
+                    <td>Email</td>
+                    <td><input type="email" name="Email" required></td>
                 </tr>
                 <tr>
                     <td>Password</td>
