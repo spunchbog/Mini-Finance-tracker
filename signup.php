@@ -39,12 +39,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';
             $mail->SMTPAuth   = true;
-            $mail->Username   = 'daavinesh879@gmail.com'; 
-            $mail->Password   = 'ghpa wxbk vtkt bhoj'; // App Password
+            $mail->Username   = 'rampubalan@gmail.com'; 
+            $mail->Password   = 'jpbn qjvy cjmt hafq'; // App Password
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = 587;
 
-            $mail->setFrom('daavinesh879@gmail.com', 'FinTrack');
+            $mail->setFrom('rampubalan@gmail.com', 'FinTrack');
             $mail->addAddress($email);
 
             $mail->isHTML(true);
@@ -54,7 +54,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $mail->send();
             echo "<script>alert('Registration successful! Please check your email to verify.'); location.href='login.php';</script>";
         } catch (Exception $e) {
-            echo "Registration successful, but email could not be sent. Mailer Error: " . $mail->ErrorInfo;
+            $errorMessage = $mail->ErrorInfo ?: $e->getMessage();
+            echo "Registration successful, but email could not be sent. Mailer Error: " . htmlspecialchars($errorMessage);
         }
         exit;
     } else {

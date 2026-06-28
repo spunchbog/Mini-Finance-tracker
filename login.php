@@ -222,6 +222,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             color: #047857;
         }
 
+        .forgot-link {
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        .forgot-link a {
+            color: #059669;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .forgot-link a:hover {
+            color: #047857;
+            text-decoration: underline;
+        }
+
         @media (max-width: 480px) {
             .login-header {
                 padding: 30px 20px;
@@ -276,6 +292,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                 <button type="submit" class="btn-login">Sign In</button>
             </form>
+            <div class="forgot-link">
+                <a href="forgot-password.php">Forgot your password?</a>
+            </div>
         </div>
 
         <div class="login-footer">

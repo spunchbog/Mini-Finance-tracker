@@ -90,6 +90,8 @@ CREATE TABLE `user` (
   `password` varchar(255) NOT NULL,
   `role` enum('admin','user') DEFAULT 'user',
   `verification_token` varchar(255) DEFAULT NULL,
+  `reset_token` varchar(255) DEFAULT NULL,
+  `reset_expires` datetime DEFAULT NULL,
   `is_verified` tinyint(1) DEFAULT 0,
   `initial_capital` decimal(10,2) DEFAULT 0.00,
   `setup_complete` tinyint(1) DEFAULT 0
