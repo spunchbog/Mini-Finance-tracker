@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 05, 2026 at 01:53 PM
+-- Generation Time: Jun 20, 2026 at 03:23 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -45,6 +45,23 @@ CREATE TABLE `category` (
   `name` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `category`
+--
+
+INSERT INTO `category` (`category_id`, `name`) VALUES
+(4, 'Bills'),
+(8, 'Business'),
+(3, 'Entertainment'),
+(1, 'Food'),
+(7, 'Freelance'),
+(10, 'Investments'),
+(11, 'Other Income'),
+(5, 'Others'),
+(6, 'Salary'),
+(9, 'Savings'),
+(2, 'Transport');
+
 -- --------------------------------------------------------
 
 --
@@ -73,8 +90,18 @@ CREATE TABLE `user` (
   `password` varchar(255) NOT NULL,
   `role` enum('admin','user') DEFAULT 'user',
   `verification_token` varchar(255) DEFAULT NULL,
-  `is_verified` tinyint(1) DEFAULT 0
+  `is_verified` tinyint(1) DEFAULT 0,
+  `initial_capital` decimal(10,2) DEFAULT 0.00,
+  `setup_complete` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `user`
+--
+
+INSERT INTO `user` (`user_id`, `email`, `password`, `role`, `verification_token`, `is_verified`, `initial_capital`, `setup_complete`) VALUES
+(3333, 'darvin@gmail.com', '$2y$10$d1uWiq8o/tF1FOwdTl/Nh.BuBydXwFbH.x47iz24pRF6agL64jXHa', 'admin', NULL, 1, 0.00, 1),
+(12347, 'rampubalan@gmail.com', '$2y$10$BDOTAh4L.wtARmDB0bKCq.j0TukWX3Mc7msVhA401sHC./bNhTtN6', 'user', NULL, 1, 0.00, 1);
 
 --
 -- Indexes for dumped tables
@@ -124,19 +151,19 @@ ALTER TABLE `budget`
 -- AUTO_INCREMENT for table `category`
 --
 ALTER TABLE `category`
-  MODIFY `category_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `category_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `transaction`
 --
 ALTER TABLE `transaction`
-  MODIFY `transaction_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `transaction_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
 
 --
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12349;
 
 --
 -- Constraints for dumped tables

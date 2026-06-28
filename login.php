@@ -4,15 +4,15 @@ include('db_connect.php');
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-    if (empty($_POST['user_id']) || empty($_POST['password'])) {
+    if (empty($_POST['Email']) || empty($_POST['password'])) {
         $err = "<p style='color:red;'>Please fill in all fields.</p>";
     } else {
-        $user_id = mysqli_real_escape_string($conn, $_POST['user_id']);
+        $email = mysqli_real_escape_string($conn, $_POST['Email']);
         $password_attempt = $_POST['password'];
 
         $query = "SELECT user_id, role, password 
                   FROM user 
-                  WHERE user_id = '$user_id' LIMIT 1";
+                  WHERE email = '$email' LIMIT 1";
         
         $result = mysqli_query($conn, $query);
 
@@ -32,10 +32,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 }
                 exit;
             } else {
-                $err = "<p style='color:red;'>Invalid User ID or Password.</p>";
+                $err = "<p style='color:red;'>Invalid Email or Password.</p>";
             }
         } else {
-            $err = "<p style='color:red;'>Invalid User ID or Password.</p>";
+            $err = "<p style='color:red;'>Invalid Email or Password.</p>";
         }
     }
 }
@@ -64,8 +64,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <form action='' method='POST'>
             <table border='0'>
                 <tr>
-                    <td>User ID</td>
-                    <td><input type="text" name="user_id" required></td>
+                    <td>Email</td>
+                    <td><input type="email" name="Email" required></td>
                 </tr>
                 <tr>
                     <td>Password</td>
