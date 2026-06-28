@@ -39,12 +39,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';
             $mail->SMTPAuth   = true;
-            $mail->Username   = 'rampubalan@gmail.com'; 
+            $mail->Username   = 'daavinesh879@gmail.com'; 
             $mail->Password   = 'ghpa wxbk vtkt bhoj'; // App Password
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = 587;
 
-            $mail->setFrom('rampubalan@gmail.com', 'FinTrack');
+            $mail->setFrom('daavinesh879@gmail.com', 'FinTrack');
             $mail->addAddress($email);
 
             $mail->isHTML(true);
