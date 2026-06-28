@@ -6,6 +6,7 @@ ini_set('display_errors', 1);
 session_start();
 include('db_connect.php');
 
+<<<<<<< HEAD
 // Include PHPMailer
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -14,6 +15,12 @@ require 'vendor/autoload.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = mysqli_real_escape_string($conn, $_POST['Email']); 
+=======
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // FIXED: Mapping form 'Email' input directly to your database 'email' column field
+    $email    = mysqli_real_escape_string($conn, $_POST['Email']); 
+>>>>>>> 96a5bd8704e287e6b775bd3a79c7f3a00f8fbe76
     $plain_password = $_POST['password'];
 
     // Check if email already exists
@@ -21,13 +28,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $result = mysqli_query($conn, $sql_check);
     
     if (mysqli_num_rows($result) > 0) {
+<<<<<<< HEAD
         echo "<script>alert('Email already exists.'); location.href='signup.php';</script>";
+=======
+        echo "<script>alert('Email already exists. Please use a different email.'); location.href='signup.php';</script>";
+>>>>>>> 96a5bd8704e287e6b775bd3a79c7f3a00f8fbe76
         exit;
     }
 
     $token = bin2hex(random_bytes(32)); 
     $hashed_password = password_hash($plain_password, PASSWORD_DEFAULT);
 
+<<<<<<< HEAD
     // Insert user with is_verified = 0
     $query = "INSERT INTO user (email, password, role, is_verified, verification_token, initial_capital, setup_complete) 
               VALUES ('$email', '$hashed_password', 'user', 0, '$token', 0.00, 0)";
@@ -56,6 +68,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } catch (Exception $e) {
             echo "Registration successful, but email could not be sent. Mailer Error: " . $mail->ErrorInfo;
         }
+=======
+    // FIXED: Matching your exact column definitions: user_id, email, password, role, is_verified, initial_capital, setup_complete
+    // Setting 'is_verified' to 1 automatically so your new users can log in instantly without an email sender server
+    $query = "INSERT INTO user (email, password, role, is_verified, initial_capital, setup_complete) 
+              VALUES ('$email', '$hashed_password', 'user', 1, 0.00, 0)";
+
+    if (mysqli_query($conn, $query)) {
+        // Set session so the new user is treated as logged in
+        $new_user_id = mysqli_insert_id($conn);
+        $_SESSION['user_id'] = $new_user_id;
+        $_SESSION['role'] = 'user';
+
+        echo "<script>alert('User Registered Successfully! Redirecting to setup...'); location.href='InitialPage.php';</script>";
+>>>>>>> 96a5bd8704e287e6b775bd3a79c7f3a00f8fbe76
         exit;
     } else {
         echo "Database Error: " . mysqli_error($conn);
@@ -82,6 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             padding: 20px;
         }
 
+<<<<<<< HEAD
         .signup-card {
             background: white;
             border-radius: 12px;
@@ -274,6 +301,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="signup-footer">
             Already have an account? <a href="login.php">Sign in here</a>
         </div>
+=======
+    <!-- Main Content Area -->
+    <div id="page-content-wrapper" class="flex-grow-1 d-flex flex-column p-4" style="overflow: hidden;">
+        <header class="mb-3">
+            <h3>Register New User</h3>
+        </header>
+        <p>Fill in the form below to create a new account.</p>
+        <form method='POST' action=''>
+            <table border='0'>
+                <tr>
+                    <td>Email:</td>
+                    <td><input type='text' name='Email' required></td>
+                </tr>
+                <tr>
+                    <td>Password:</td>
+                    <td><input type='password' name='password' required minlength="5"></td>
+                </tr>
+                <tr>
+                    <td colspan='2' align='center'>
+                        <br>
+                        <button type='submit'>Register</button>
+                    </td>
+                </tr>
+            </table>
+        </form>
+        
+>>>>>>> 96a5bd8704e287e6b775bd3a79c7f3a00f8fbe76
     </div>
 </div>
 

@@ -47,6 +47,7 @@ require_once 'data.php'; // Pulls in timeline arrays, dropdown math, and card to
     <?php include 'sidebar.php'; ?>
 
     <div id="page-content-wrapper" class="flex-grow-1 d-flex flex-column p-4" style="overflow: hidden;">
+
         
         <header class="mb-4 d-flex justify-content-between align-items-center" style="flex: 0 1 auto;">
             
