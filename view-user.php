@@ -12,7 +12,7 @@ if (empty($_GET['user_id']) || !is_numeric($_GET['user_id'])) {
 }
 
 $user_id = intval($_GET['user_id']);
-$result = mysqli_query($conn, "SELECT user_id, email, role, initial_capital, setup_complete FROM user WHERE user_id = $user_id LIMIT 1");
+$result = mysqli_query($conn, "SELECT user_id, email, role, initial_capital, setup_complete, created_at, last_login FROM user WHERE user_id = $user_id LIMIT 1");
 if (!$result || mysqli_num_rows($result) !== 1) {
     die('User not found.');
 }
@@ -39,6 +39,8 @@ $user = mysqli_fetch_assoc($result);
             <tr><th>Role</th><td><?php echo htmlspecialchars($user['role']); ?></td></tr>
             <tr><th>Initial Capital</th><td><?php echo htmlspecialchars($user['initial_capital']); ?></td></tr>
             <tr><th>Setup Complete</th><td><?php echo $user['setup_complete'] ? 'Yes' : 'No'; ?></td></tr>
+            <tr><th>Created At</th><td><?php echo htmlspecialchars($user['created_at']); ?></td></tr>
+            <tr><th>Last Login</th><td><?php echo $user['last_login'] ? htmlspecialchars($user['last_login']) : 'Never'; ?></td></tr>
         </table>
         <a href="user-management.php" class="btn btn-secondary">Back to User Management</a>
     </div>
