@@ -94,7 +94,9 @@ CREATE TABLE `user` (
   `reset_expires` datetime DEFAULT NULL,
   `is_verified` tinyint(1) DEFAULT 0,
   `initial_capital` decimal(10,2) DEFAULT 0.00,
-  `setup_complete` tinyint(1) DEFAULT 0
+  `setup_complete` tinyint(1) DEFAULT 0,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `last_login` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
