@@ -90,10 +90,13 @@ if ($is_admin) {
                     </div>
                 </div>
             </div>
-        <?php else: ?>
-            <div class="card shadow-sm border-0 p-4">
-                <h5>Welcome to FinTrack</h5>
-                <p class="text-muted">Please login or sign up to access your personal finance dashboard.</p>
+       <?php else: ?>
+            <div class="card shadow-sm border-0 flex-grow-1" style="overflow: hidden; border-radius: 15px;">
+                <div class="w-100 h-100" style="position: relative;">
+                    <img src="image/fintrack.png" 
+                         alt="Finance Tracking Illustration" 
+                         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                </div>
             </div>
         <?php endif; ?>
     </div>
