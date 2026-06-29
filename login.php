@@ -42,6 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $role = trim(strtolower($row['role']));
                     $_SESSION['role'] = ($role === 'admin') ? 'admin' : 'user';
 
+                    // Update last_login timestamp
+                    mysqli_query($conn, "UPDATE user SET last_login = NOW() WHERE user_id = " . intval($row['user_id']));
+
                     // Redirect logic:
                     if ($_SESSION['role'] === 'admin') {
                         echo "<script>alert('Admin login successful!'); window.location.href='index.php';</script>";
