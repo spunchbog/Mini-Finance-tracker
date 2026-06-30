@@ -1,19 +1,15 @@
-﻿<?php
-// Top of data.php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+﻿ <?php
+// data.php
+// In the future, this is where you'll put:
+// $conn = mysqli_connect("localhost", "root", "", "fintrack");
+
+// 1. Set the Timezone
+date_default_timezone_set('Asia/Kuala_Lumpur');
 
 require_once 'db_connect.php';
 
-// Force authentication check
-if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
-    exit();
-}
-$user_id = intval($_SESSION['user_id']);
-
-// ADD THE WHERE FILTER HERE
+// We join 'transaction' (t) and 'category' (c) 
+// to replace the ID number with the actual category name.
 $query = "
     SELECT 
         t.description AS description, 
@@ -23,12 +19,10 @@ $query = "
         t.type
     FROM transaction t
     INNER JOIN category c ON t.category_id = c.category_id
-    WHERE t.user_id = :user_id
     ORDER BY t.date DESC
 ";
 
-$stmt = $pdo->prepare($query);
-$stmt->execute([':user_id' => $user_id]);
+$stmt = $pdo->query($query);
 $transactions = $stmt->fetchAll();
 
 // Now the rest of your logic (Buckets, Thresholds, Calculations) 
@@ -301,25 +295,23 @@ $initialCapital = (float)($userData['initial_capital'] ?? 0);
 $currentBalance = $initialCapital + $totalIncome - $totalExpense;
 
 
-// For Reports Financial Insights Feature
-// FIXED: Changed to prepare() and added the user_id filtering condition
-$topCatStmt = $pdo->prepare("
+//For Reports Financial Insights Feature
+// Fetch the top spending category
+$topCatStmt = $pdo->query("
     SELECT c.name AS category_name, SUM(ABS(t.amount)) AS total_spent
     FROM transaction t
     JOIN category c ON t.category_id = c.category_id
-    WHERE t.type = 'expense' AND t.user_id = :user_id
+    WHERE t.type = 'expense'
     GROUP BY t.category_id
     ORDER BY total_spent DESC
     LIMIT 1
 ");
-
-// Pass the dynamic session ID into the execution array
-$topCatStmt->execute([':user_id' => $user_id]);
 $topCategoryData = $topCatStmt->fetch();
 
 // Store values for layout display
 $highestSpendingCategory = $topCategoryData['category_name'] ?? 'None';
 $highestSpendingAmount = (float)($topCategoryData['total_spent'] ?? 0);
+
 // 1. Total spent in the last 7 days (This Week)
 $thisWeekStmt = $pdo->query("
     SELECT SUM(ABS(amount)) AS total 
