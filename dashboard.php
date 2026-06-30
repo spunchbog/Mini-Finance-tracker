@@ -385,6 +385,23 @@ const spendingOverviewChart = new Chart(ctx, {
         maintainAspectRatio: false,
         cutout: '75%', // This creates the "hole" in the middle
         plugins: {
+            tooltip: {
+            callbacks: {
+                label: function(context) {
+                    // 1. Get the raw value of the current slice
+                    let rawValue = context.raw;
+                    
+                    // 2. Calculate the total sum of all datasets combined
+                    let total = context.dataset.data.reduce((sum, value) => sum + Number(value), 0);
+                    
+                    // 3. Compute the percentage
+                    let percentage = ((rawValue / total) * 100).toFixed(1); // '1' means 1 decimal place (e.g., 25.5%)
+                    
+                    // 4. Return the custom label text format shown on hover
+                    return context.label + ': RM ' + rawValue + ' (' + percentage + '%)';
+                }
+            }
+        },
             legend: {
                 display: true,
                 position: 'bottom',

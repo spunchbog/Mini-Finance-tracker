@@ -1,96 +1,109 @@
 <?php
 session_start();
-include('db_connect.php');
+include('db_connect.php'); // Assumes this initializes your $pdo connection object
 
-// Redirect protection guardrail
+// 1. DYNAMIC CHECK: Ensure a user is actually logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
 
+// FIXED: Remove the hardcoded 1111 override and cast securely
 $user_id = (int)$_SESSION['user_id'];
-// TEMPORARY: Force User 1
-$user_id = 1111;
 $msg = "";
 
-// 1. HANDLE BUDGET SUBMISSION
+// 2. HANDLE BUDGET SUBMISSION (PDO Prepared Transition)
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['set_budget'])) {
     $category_id = (int)$_POST['category_id'];
     $limit_amount = (float)$_POST['limit_amount'];
 
-    // Check if a budget limit already exists for this user and category combination
-    $check_exist = mysqli_query($conn, "SELECT budget_id FROM budget WHERE user_id = $user_id AND category_id = $category_id LIMIT 1");
+    // Check if a budget limit configuration already exists for this user/category combo
+    $check_exist = $pdo->prepare("SELECT budget_id FROM budget WHERE user_id = :user_id AND category_id = :category_id LIMIT 1");
+    $check_exist->execute([
+        ':user_id' => $user_id,
+        ':category_id' => $category_id
+    ]);
     
-    if (mysqli_num_rows($check_exist) > 0) {
-        // Update the existing limit configuration
-        $save_query = "UPDATE budget SET limit_amount = $limit_amount WHERE user_id = $user_id AND category_id = $category_id";
+    if ($check_exist->fetch()) {
+        // Update the existing limit configuration safely
+        $save_stmt = $pdo->prepare("UPDATE budget SET limit_amount = :limit_amount WHERE user_id = :user_id AND category_id = :category_id");
     } else {
         // Insert a clean new budget threshold row
-        $save_query = "INSERT INTO budget (user_id, category_id, limit_amount) VALUES ($user_id, $category_id, $limit_amount)";
+        $save_stmt = $pdo->prepare("INSERT INTO budget (user_id, category_id, limit_amount) VALUES (:user_id, :category_id, :limit_amount)");
     }
     
-    if (mysqli_query($conn, $save_query)) {
+    $success = $save_stmt->execute([
+        ':user_id' => $user_id,
+        ':category_id' => $category_id,
+        ':limit_amount' => $limit_amount
+    ]);
+
+    if ($success) {
         $msg = "<p style='color:green; font-weight:bold;'>Budget updated successfully!</p>";
     } else {
-        $msg = "<p style='color:red; font-weight:bold;'>Error saving budget: " . mysqli_error($conn) . "</p>";
+        $msg = "<p style='color:red; font-weight:bold;'>Error saving budget configuration parameters.</p>";
     }
 }
 
-// 2. FETCH ALL AVAILABLE CATEGORIES FOR THE DROPDOWN SELECTOR (FIXED: Using 'name')
-$categories_res = mysqli_query($conn, "SELECT category_id, name FROM category"); 
+// 3. FETCH ALL AVAILABLE CATEGORIES FOR THE DROPDOWN SELECTOR
+$categories_stmt = $pdo->query("SELECT category_id, name FROM category ORDER BY name ASC");
+$categories = $categories_stmt->fetchAll();
 
-// 3. FETCH CURRENT MONTH'S EXPENSES BY CATEGORY ID
+// 4. FETCH CURRENT MONTH'S EXPENSES BY CATEGORY ID
 $current_month_start = date('Y-m-01 00:00:00');
 $current_month_end = date('Y-m-t 23:59:59');
 
 $expenses = [];
 
-// Determine if the table is singular or plural
+// Determine if the table is singular or plural dynamically
 $table_name = "transaction"; 
-$table_check = mysqli_query($conn, "SHOW TABLES LIKE 'transaction'");
-if (mysqli_num_rows($table_check) == 0) {
-    $table_name = "transactions"; 
+$table_check = $pdo->query("SHOW TABLES LIKE 'transaction'")->fetch();
+if (!$table_check) {
+    $table_name = "transactions";
 }
 
-// DYNAMIC COLUMN DETECTOR: Find out what your date column is actually named
-$date_column = "date"; // Default guess
-$column_check = mysqli_query($conn, "SHOW COLUMNS FROM `$table_name` LIKE 'transaction_date'");
-if (mysqli_num_rows($column_check) > 0) {
-    $date_column = "transaction_date"; // Switch to transaction_date if it exists
+// DYNAMIC COLUMN DETECTOR: Date Field
+$date_column = "date";
+$column_check = $pdo->query("SHOW COLUMNS FROM `$table_name` LIKE 'transaction_date'")->fetch();
+if ($column_check) {
+    $date_column = "transaction_date";
 }
 
-// DYNAMIC COLUMN DETECTOR: Find out what your amount column is named (amount vs amt)
-$amount_column = "amount"; // Default guess
-$amt_check = mysqli_query($conn, "SHOW COLUMNS FROM `$table_name` LIKE 'amt'");
-if (mysqli_num_rows($amt_check) > 0) {
+// DYNAMIC COLUMN DETECTOR: Amount Field
+$amount_column = "amount";
+$amt_check = $pdo->query("SHOW COLUMNS FROM `$table_name` LIKE 'amt'")->fetch();
+if ($amt_check) {
     $amount_column = "amt";
 }
 
-// Build the query dynamically using the columns we discovered
+// Securely pool sums up inside database engine before extraction array mapping
 $expense_query = "SELECT category_id, SUM(ABS(`$amount_column`)) as total_spent 
                   FROM `$table_name` 
-                  WHERE user_id = $user_id 
+                  WHERE user_id = :user_id 
                     AND type = 'expense' 
-                    AND `$date_column` BETWEEN '$current_month_start' AND '$current_month_end'
+                    AND `$date_column` BETWEEN :start_date AND :end_date
                   GROUP BY category_id";
 
-$expense_res = mysqli_query($conn, $expense_query);
+$expense_stmt = $pdo->prepare($expense_query);
+$expense_stmt->execute([
+    ':user_id' => $user_id,
+    ':start_date' => $current_month_start,
+    ':end_date' => $current_month_end
+]);
 
-if ($expense_res) {
-    while ($row = mysqli_fetch_assoc($expense_res)) {
-        $expenses[(int)$row['category_id']] = (float)$row['total_spent'];
-    }
-} else {
-    // Elegant fallback hook if something else breaks
-    echo "<p style='color:orange;'>Notice: Could not track real-time monthly expenses: " . mysqli_error($conn) . "</p>";
+while ($row = $expense_stmt->fetch()) {
+    $expenses[(int)$row['category_id']] = (float)$row['total_spent'];
 }
 
-// 4. FETCH CONFIGURED BUDGET STATUS WITH JOINED CATEGORY NAMES (FIXED: Using c.name)
-$budget_status_query = "SELECT b.category_id, b.limit_amount, c.name 
-                        FROM budget b 
-                        JOIN category c ON b.category_id = c.category_id 
-                        WHERE b.user_id = $user_id";
-$budget_status_res = mysqli_query($conn, $budget_status_query);
+// 5. FETCH CONFIGURED BUDGET STATUS WITH JOINED CATEGORY NAMES
+$budget_status_stmt = $pdo->prepare("
+    SELECT b.category_id, b.limit_amount, c.name 
+    FROM budget b 
+    JOIN category c ON b.category_id = c.category_id 
+    WHERE b.user_id = :user_id
+");
+$budget_status_stmt->execute([':user_id' => $user_id]);
+$budget_statuses = $budget_status_stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -100,7 +113,6 @@ $budget_status_res = mysqli_query($conn, $budget_status_query);
     <title>FinTrack - Monthly Budgeting</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <div id="wrapper" class="d-flex vh-100 w-100" style="overflow: hidden;"> 
@@ -121,13 +133,11 @@ $budget_status_res = mysqli_query($conn, $budget_status_query);
                     <td>
                         <select name="category_id" required>
                             <option value="">-- Choose Category --</option>
-                            <?php if ($categories_res): ?>
-                                <?php while($cat = mysqli_fetch_assoc($categories_res)): ?>
-                                    <option value="<?php echo $cat['category_id']; ?>">
-                                        <?php echo htmlspecialchars($cat['name']); ?>
-                                    </option>
-                                <?php endwhile; ?>
-                            <?php endif; ?>
+                            <?php foreach ($categories as $cat): ?>
+                                <option value="<?php echo $cat['category_id']; ?>">
+                                    <?php echo htmlspecialchars($cat['name']); ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </td>
                 </tr>
@@ -157,10 +167,10 @@ $budget_status_res = mysqli_query($conn, $budget_status_query);
                 </tr>
             </thead>
             <tbody>
-                <?php if (!$budget_status_res || mysqli_num_rows($budget_status_res) === 0): ?>
+                <?php if (empty($budget_statuses)): ?>
                     <tr><td colspan="4" align="center">No active budget allocations created yet.</td></tr>
                 <?php else: ?>
-                    <?php while ($row = mysqli_fetch_assoc($budget_status_res)): 
+                    <?php foreach ($budget_statuses as $row): 
                         $cat_id = (int)$row['category_id'];
                         $limit = (float)$row['limit_amount'];
                         $spent = isset($expenses[$cat_id]) ? $expenses[$cat_id] : 0.00;
@@ -178,12 +188,12 @@ $budget_status_res = mysqli_query($conn, $budget_status_query);
                                 <?php endif; ?>
                             </td>
                         </tr>
-                    <?php endwhile; ?>
+                    <?php endforeach; ?>
                 <?php endif; ?>
             </tbody>
         </table>
     </div>
-
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
