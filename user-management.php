@@ -140,7 +140,11 @@ $result = mysqli_query($conn, $sql);
             <td>
                 <a href="view-user.php?user_id=<?php echo urlencode($row['user_id']); ?>">View Details</a>
                 <?php if ($row['role'] === 'admin' && intval($row['user_id']) !== intval($_SESSION['user_id'])): ?>
-                    | <a href="deactivate-user.php?user_id=<?php echo urlencode($row['user_id']); ?>" class="deactivate-link" data-user-id="<?php echo intval($row['user_id']); ?>" onclick="return confirm('Are you sure you want to deactivate this admin account?');">Deactivate</a>
+                    <?php if ((int)$row['is_active'] === 1): ?>
+                        | <a href="deactivate-user.php?user_id=<?php echo urlencode($row['user_id']); ?>" class="deactivate-link" data-user-id="<?php echo intval($row['user_id']); ?>" onclick="return confirm('Are you sure you want to deactivate this admin account?');">Deactivate</a>
+                    <?php else: ?>
+                        | <a href="activate-user.php?user_id=<?php echo urlencode($row['user_id']); ?>" class="activate-link" data-user-id="<?php echo intval($row['user_id']); ?>" onclick="return confirm('Are you sure you want to reactivate this admin account?');">Activate</a>
+                    <?php endif; ?>
                 <?php endif; ?>
             </td>
         </tr>
