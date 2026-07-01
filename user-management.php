@@ -9,6 +9,10 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 }
 
 $admin_message = '';
+if (isset($_SESSION['admin_message'])) {
+    $admin_message = $_SESSION['admin_message'];
+    unset($_SESSION['admin_message']);
+}
 
 // STEP 1: Generate & send verification code (prints to terminal)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_code'])) {
@@ -96,7 +100,7 @@ if (isset($_GET['cancel'])) {
 $awaiting_code = isset($_SESSION['pending_admin']) && time() <= $_SESSION['pending_admin']['expires'];
 
 // Fetch all users
-$sql = "SELECT user_id, email, role FROM user ORDER BY user_id ASC";
+$sql = "SELECT user_id, email, role, is_active FROM user ORDER BY user_id ASC";
 $result = mysqli_query($conn, $sql);
 ?>
 
@@ -122,6 +126,7 @@ $result = mysqli_query($conn, $sql);
             <th>User ID</th>
             <th>Email</th>
             <th>Role</th>
+            <th>Status</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -131,6 +136,7 @@ $result = mysqli_query($conn, $sql);
             <td><?php echo htmlspecialchars($row['user_id']); ?></td>
             <td><?php echo htmlspecialchars($row['email']); ?></td>
             <td><?php echo htmlspecialchars($row['role']); ?></td>
+            <td><?php echo ((int)$row['is_active'] === 0) ? 'Deactivated' : 'Active'; ?></td>
             <td>
                 <a href="view-user.php?user_id=<?php echo urlencode($row['user_id']); ?>">View Details</a>
                 <?php if ($row['role'] === 'admin' && intval($row['user_id']) !== intval($_SESSION['user_id'])): ?>

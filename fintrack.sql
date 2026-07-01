@@ -93,6 +93,7 @@ CREATE TABLE `user` (
   `reset_token` varchar(255) DEFAULT NULL,
   `reset_expires` datetime DEFAULT NULL,
   `is_verified` tinyint(1) DEFAULT 0,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `initial_capital` decimal(10,2) DEFAULT 0.00,
   `setup_complete` tinyint(1) DEFAULT 0,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
@@ -103,9 +104,9 @@ CREATE TABLE `user` (
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`user_id`, `email`, `password`, `role`, `verification_token`, `is_verified`, `initial_capital`, `setup_complete`) VALUES
-(3333, 'darvin@gmail.com', '$2y$10$d1uWiq8o/tF1FOwdTl/Nh.BuBydXwFbH.x47iz24pRF6agL64jXHa', 'admin', NULL, 1, 0.00, 1),
-(12347, 'rampubalan@gmail.com', '$2y$10$BDOTAh4L.wtARmDB0bKCq.j0TukWX3Mc7msVhA401sHC./bNhTtN6', 'user', NULL, 1, 0.00, 1);
+INSERT INTO `user` (`user_id`, `email`, `password`, `role`, `verification_token`, `is_verified`, `is_active`, `initial_capital`, `setup_complete`) VALUES
+(3333, 'darvin@gmail.com', '$2y$10$d1uWiq8o/tF1FOwdTl/Nh.BuBydXwFbH.x47iz24pRF6agL64jXHa', 'admin', NULL, 1, 1, 0.00, 1),
+(12347, 'rampubalan@gmail.com', '$2y$10$BDOTAh4L.wtARmDB0bKCq.j0TukWX3Mc7msVhA401sHC./bNhTtN6', 'user', NULL, 1, 1, 0.00, 1);
 
 --
 -- Indexes for dumped tables
