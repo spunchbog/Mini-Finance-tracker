@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_code'])) {
         $escaped_hash = mysqli_real_escape_string($conn, $hashed_admin_password);
 
         $insert_admin = "INSERT INTO user (email, password, role, is_verified, verification_token, initial_capital, setup_complete) 
-                          VALUES ('$admin_email_escaped', '$escaped_hash', 'admin', 1, NULL, 0.00, 1)";
+               VALUES ('$admin_email_escaped', '$escaped_hash', 'admin', 1, NULL, NULL, 1)";
 
         if (mysqli_query($conn, $insert_admin)) {
             $admin_message = '<div class="alert alert-success">New admin created successfully with an encrypted password.</div>';
@@ -99,8 +99,7 @@ if (isset($_GET['cancel'])) {
 // Determine if we should show the code-entry step
 $awaiting_code = isset($_SESSION['pending_admin']) && time() <= $_SESSION['pending_admin']['expires'];
 
-// Fetch all users
-$sql = "SELECT user_id, email, role, is_active FROM user ORDER BY user_id ASC";
+$sql = "SELECT user_id, email, role, is_verified FROM user ORDER BY user_id ASC";
 $result = mysqli_query($conn, $sql);
 ?>
 
@@ -136,11 +135,11 @@ $result = mysqli_query($conn, $sql);
             <td><?php echo htmlspecialchars($row['user_id']); ?></td>
             <td><?php echo htmlspecialchars($row['email']); ?></td>
             <td><?php echo htmlspecialchars($row['role']); ?></td>
-            <td><?php echo ((int)$row['is_active'] === 0) ? 'Deactivated' : 'Active'; ?></td>
+            <td><?php echo ((int)$row['is_verified'] === 0) ? 'Deactivated' : 'Active'; ?></td>
             <td>
                 <a href="view-user.php?user_id=<?php echo urlencode($row['user_id']); ?>">View Details</a>
                 <?php if ($row['role'] === 'admin' && intval($row['user_id']) !== intval($_SESSION['user_id'])): ?>
-                    <?php if ((int)$row['is_active'] === 1): ?>
+                    <?php if ((int)$row['is_verified'] === 1): ?>
                         | <a href="deactivate-user.php?user_id=<?php echo urlencode($row['user_id']); ?>" class="deactivate-link" data-user-id="<?php echo intval($row['user_id']); ?>" onclick="return confirm('Are you sure you want to deactivate this admin account?');">Deactivate</a>
                     <?php else: ?>
                         | <a href="activate-user.php?user_id=<?php echo urlencode($row['user_id']); ?>" class="activate-link" data-user-id="<?php echo intval($row['user_id']); ?>" onclick="return confirm('Are you sure you want to reactivate this admin account?');">Activate</a>

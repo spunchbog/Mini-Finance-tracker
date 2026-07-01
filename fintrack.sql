@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 20, 2026 at 03:23 PM
+-- Generation Time: Jul 01, 2026 at 03:12 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -90,23 +90,26 @@ CREATE TABLE `user` (
   `password` varchar(255) NOT NULL,
   `role` enum('admin','user') DEFAULT 'user',
   `verification_token` varchar(255) DEFAULT NULL,
-  `reset_token` varchar(255) DEFAULT NULL,
-  `reset_expires` datetime DEFAULT NULL,
   `is_verified` tinyint(1) DEFAULT 0,
-  `is_active` tinyint(1) NOT NULL DEFAULT 1,
-  `initial_capital` decimal(10,2) DEFAULT 0.00,
   `setup_complete` tinyint(1) DEFAULT 0,
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  `last_login` datetime DEFAULT NULL
+  `created_at` datetime DEFAULT current_timestamp(),
+  `last_login` datetime DEFAULT NULL,
+  `initial_capital` decimal(18,2) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`user_id`, `email`, `password`, `role`, `verification_token`, `is_verified`, `is_active`, `initial_capital`, `setup_complete`) VALUES
-(3333, 'darvin@gmail.com', '$2y$10$d1uWiq8o/tF1FOwdTl/Nh.BuBydXwFbH.x47iz24pRF6agL64jXHa', 'admin', NULL, 1, 1, 0.00, 1),
-(12347, 'rampubalan@gmail.com', '$2y$10$BDOTAh4L.wtARmDB0bKCq.j0TukWX3Mc7msVhA401sHC./bNhTtN6', 'user', NULL, 1, 1, 0.00, 1);
+INSERT INTO `user` (`user_id`, `email`, `password`, `role`, `verification_token`, `is_verified`, `setup_complete`, `created_at`, `last_login`, `initial_capital`, `is_active`) VALUES
+(12386, 'darvin@gmail.com', '$2y$10$ZKpWXT8qTNy6b9Wmb.aipO/UasVl7l9NBscXdWgsetn8IJ1x9LMxe', 'admin', NULL, 1, 1, '2026-06-29 21:06:23', NULL, NULL, 1),
+(12392, 'eehern@gmail.com', '$2y$10$6qXHzOe1/UMqxVoXq.K2he3s2VUMrlChNOp609BpYtF.69gkhwrNK', 'admin', NULL, 1, 1, '2026-06-29 21:06:23', '2026-07-01 21:01:43', NULL, 1),
+(12396, 'rampubalan@gmail.com', '$2y$10$A8UvW/nClCh21i7/DzHxU.lkfFrFzyCoXw8kqZIwAoIjdoZ1ukUS6', 'user', NULL, 1, 1, '2026-06-29 21:06:23', '2026-06-30 20:34:24', NULL, 1),
+(12399, 'pubalanram@gmail.com', '$2y$10$Ki0EUEQyXnbBFMWaAJZsputNmhzPDyt8V.CVPEhss0oNTM8ytS0Ji', 'user', NULL, 1, 1, '2026-06-29 21:06:23', NULL, NULL, 1),
+(12400, 'rambhaai13@gmail.com', '$2y$10$Cr7qzY602hEkMDP0NB2Xj.heE0Zm3nWi7PrHZo2yV49E.Oq.X3NNy', 'user', 'a32a3f5b0f1dc2b876e34c3a7998fa3aff464324ab8b09f9c755e8bd2914f901', 0, 0, '2026-06-29 21:06:23', NULL, NULL, 1),
+(12401, 'eejie@gmail.com', '$2y$10$L/VSNW6sktmv5Jt4W22SOuoZ2yrmpeqQ9wjwsWdCzOl.4DaeyCopa', 'admin', NULL, 1, 1, '2026-06-29 21:06:23', NULL, NULL, 1),
+(12404, 'arjun@gmail.com', '$2y$10$HBi9.7vKLhyrjAA1wgUme.voNXrn4lSg.NNLWwGxKagEKbqbvJkMW', 'admin', NULL, 1, 1, '2026-06-30 23:01:59', '2026-07-01 20:52:53', 0.00, 1);
 
 --
 -- Indexes for dumped tables
@@ -150,7 +153,7 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `budget`
 --
 ALTER TABLE `budget`
-  MODIFY `budget_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `budget_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `category`
@@ -162,13 +165,13 @@ ALTER TABLE `category`
 -- AUTO_INCREMENT for table `transaction`
 --
 ALTER TABLE `transaction`
-  MODIFY `transaction_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
+  MODIFY `transaction_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
 
 --
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12349;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12407;
 
 --
 -- Constraints for dumped tables
