@@ -94,22 +94,21 @@ CREATE TABLE `user` (
   `setup_complete` tinyint(1) DEFAULT 0,
   `created_at` datetime DEFAULT current_timestamp(),
   `last_login` datetime DEFAULT NULL,
-  `initial_capital` decimal(18,2) DEFAULT NULL,
-  `is_active` tinyint(1) NOT NULL DEFAULT 1
+  `initial_capital` decimal(18,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`user_id`, `email`, `password`, `role`, `verification_token`, `is_verified`, `setup_complete`, `created_at`, `last_login`, `initial_capital`, `is_active`) VALUES
-(12386, 'darvin@gmail.com', '$2y$10$ZKpWXT8qTNy6b9Wmb.aipO/UasVl7l9NBscXdWgsetn8IJ1x9LMxe', 'admin', NULL, 1, 1, '2026-06-29 21:06:23', NULL, NULL, 1),
-(12392, 'eehern@gmail.com', '$2y$10$6qXHzOe1/UMqxVoXq.K2he3s2VUMrlChNOp609BpYtF.69gkhwrNK', 'admin', NULL, 1, 1, '2026-06-29 21:06:23', '2026-07-01 21:01:43', NULL, 1),
-(12396, 'rampubalan@gmail.com', '$2y$10$A8UvW/nClCh21i7/DzHxU.lkfFrFzyCoXw8kqZIwAoIjdoZ1ukUS6', 'user', NULL, 1, 1, '2026-06-29 21:06:23', '2026-06-30 20:34:24', NULL, 1),
-(12399, 'pubalanram@gmail.com', '$2y$10$Ki0EUEQyXnbBFMWaAJZsputNmhzPDyt8V.CVPEhss0oNTM8ytS0Ji', 'user', NULL, 1, 1, '2026-06-29 21:06:23', NULL, NULL, 1),
-(12400, 'rambhaai13@gmail.com', '$2y$10$Cr7qzY602hEkMDP0NB2Xj.heE0Zm3nWi7PrHZo2yV49E.Oq.X3NNy', 'user', 'a32a3f5b0f1dc2b876e34c3a7998fa3aff464324ab8b09f9c755e8bd2914f901', 0, 0, '2026-06-29 21:06:23', NULL, NULL, 1),
-(12401, 'eejie@gmail.com', '$2y$10$L/VSNW6sktmv5Jt4W22SOuoZ2yrmpeqQ9wjwsWdCzOl.4DaeyCopa', 'admin', NULL, 1, 1, '2026-06-29 21:06:23', NULL, NULL, 1),
-(12404, 'arjun@gmail.com', '$2y$10$HBi9.7vKLhyrjAA1wgUme.voNXrn4lSg.NNLWwGxKagEKbqbvJkMW', 'admin', NULL, 1, 1, '2026-06-30 23:01:59', '2026-07-01 20:52:53', 0.00, 1);
+INSERT INTO `user` (`user_id`, `email`, `password`, `role`, `verification_token`, `is_verified`, `setup_complete`, `created_at`, `last_login`, `initial_capital`) VALUES
+(12386, 'darvin@gmail.com', '$2y$10$ZKpWXT8qTNy6b9Wmb.aipO/UasVl7l9NBscXdWgsetn8IJ1x9LMxe', 'admin', NULL, 1, 1, '2026-06-29 21:06:23', NULL, NULL),
+(12392, 'eehern@gmail.com', '$2y$10$6qXHzOe1/UMqxVoXq.K2he3s2VUMrlChNOp609BpYtF.69gkhwrNK', 'admin', NULL, 1, 1, '2026-06-29 21:06:23', '2026-07-01 21:01:43', NULL),
+(12396, 'rampubalan@gmail.com', '$2y$10$A8UvW/nClCh21i7/DzHxU.lkfFrFzyCoXw8kqZIwAoIjdoZ1ukUS6', 'user', NULL, 1, 1, '2026-06-29 21:06:23', '2026-06-30 20:34:24', NULL),
+(12399, 'pubalanram@gmail.com', '$2y$10$Ki0EUEQyXnbBFMWaAJZsputNmhzPDyt8V.CVPEhss0oNTM8ytS0Ji', 'user', NULL, 1, 1, '2026-06-29 21:06:23', NULL, NULL),
+(12400, 'rambhaai13@gmail.com', '$2y$10$Cr7qzY602hEkMDP0NB2Xj.heE0Zm3nWi7PrHZo2yV49E.Oq.X3NNy', 'user', 'a32a3f5b0f1dc2b876e34c3a7998fa3aff464324ab8b09f9c755e8bd2914f901', 0, 0, '2026-06-29 21:06:23', NULL, NULL),
+(12401, 'eejie@gmail.com', '$2y$10$L/VSNW6sktmv5Jt4W22SOuoZ2yrmpeqQ9wjwsWdCzOl.4DaeyCopa', 'admin', NULL, 1, 1, '2026-06-29 21:06:23', NULL, NULL),
+(12404, 'arjun@gmail.com', '$2y$10$HBi9.7vKLhyrjAA1wgUme.voNXrn4lSg.NNLWwGxKagEKbqbvJkMW', 'admin', NULL, 1, 1, '2026-06-30 23:01:59', '2026-07-01 20:52:53', 0.00);
 
 --
 -- Indexes for dumped tables

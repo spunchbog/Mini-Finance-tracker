@@ -6,15 +6,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($_POST['Email']) || empty($_POST['password'])) {
         $err = "<p style='color:red;'>Please fill in all fields.</p>";
     } else {
-        mysqli_query($conn, "ALTER TABLE user ADD COLUMN IF NOT EXISTS is_active TINYINT(1) NOT NULL DEFAULT 1");
-
         $email = mysqli_real_escape_string($conn, $_POST['Email']);
         $password_attempt = $_POST['password'];
 
-        // FETCHING: Added 'is_verified', 'setup_complete', and 'is_active' to the query
-        $query = "SELECT user_id, role, password, is_verified, setup_complete, is_active 
-                  FROM user 
-                  WHERE email = '$email' LIMIT 1";
+        // FETCHING: Added 'is_verified' and 'setup_complete' to the query
+        $query = "SELECT user_id, role, password, is_verified, setup_complete 
+              FROM user 
+              WHERE email = '$email' LIMIT 1";
         
         $result = mysqli_query($conn, $query);
 
@@ -33,12 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
 
             if ($valid_password) {
-                // 1. CHECK: Account status
-                if (isset($row['is_active']) && (int)$row['is_active'] === 0) {
-                    $err = "<p style='color:red;'>This account has been deactivated. Please contact an administrator.</p>";
-                }
-                // 2. CHECK: Email Verification
-                elseif ($row['is_verified'] == 0) {
+                // 1. CHECK: Email Verification
+                if ($row['is_verified'] == 0) {
                     $err = "<p style='color:red;'>Please verify your email before logging in.</p>";
                 } 
                 // 3. CHECK: Setup Completion

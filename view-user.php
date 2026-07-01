@@ -37,7 +37,7 @@ $user = mysqli_fetch_assoc($result);
             <tr><th>User ID</th><td><?php echo htmlspecialchars($user['user_id']); ?></td></tr>
             <tr><th>Email</th><td><?php echo htmlspecialchars($user['email']); ?></td></tr>
             <tr><th>Role</th><td><?php echo htmlspecialchars($user['role']); ?></td></tr>
-            <tr><th>Initial Capital</th><td><?php echo htmlspecialchars($user['initial_capital']); ?></td></tr>
+            <tr><th>Initial Capital</th><td><?php echo $user['initial_capital'] === null ? '-' : htmlspecialchars($user['initial_capital']); ?></td></tr>
             <tr><th>Setup Complete</th><td><?php echo $user['setup_complete'] ? 'Yes' : 'No'; ?></td></tr>
             <tr><th>Created At</th><td><?php echo htmlspecialchars($user['created_at']); ?></td></tr>
             <tr><th>Last Login</th><td><?php echo $user['last_login'] ? htmlspecialchars($user['last_login']) : 'Never'; ?></td></tr>
