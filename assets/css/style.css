@@ -62,15 +62,14 @@ body {
 #sidebar-wrapper {
     width: 16rem;
     height: 100vh;
-    max
 }
 
 /* Page content takes the remaining width */
 #page-content-wrapper {
     padding: 1.5rem !important;
     width: calc(100% - 250px);
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
+    overflow-y: auto;
 }
 
 /* Remove any 'toggled' classes or transforms you had before */
@@ -78,8 +77,8 @@ body {
 /* Prevents the whole page from moving */
 body, html {
     font-size: 14px;
-    height: 100%;
-    overflow: hidden;
+    min-height: 100%;
+    overflow-y: auto;
 }
 
 /* Makes the table area scrollable while the header stays fixed */
