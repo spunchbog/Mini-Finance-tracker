@@ -28,9 +28,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $token = bin2hex(random_bytes(32)); 
     $hashed_password = password_hash($plain_password, PASSWORD_DEFAULT);
 
-    // Insert user with is_verified = 0
-    $query = "INSERT INTO user (email, password, role, is_verified, verification_token, initial_capital, setup_complete) 
-              VALUES ('$email', '$hashed_password', 'user', 0, '$token', 0.00, 0)";
+    // FIXED: Removed 'initial_capital' and 'setup_complete' fields from the SQL statement
+    $query = "INSERT INTO user (email, password, role, is_verified, verification_token) 
+              VALUES ('$email', '$hashed_password', 'user', 0, '$token')";
 
     if (mysqli_query($conn, $query)) {
         // Send Verification Email

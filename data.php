@@ -284,15 +284,10 @@ $finalTrendIncome = array_values($trendIncome);
 $finalTrendExpense = array_values($trendExpense);
 
 
-// 7. FETCH INITIAL CAPITAL
-// Using the PDO connection already established in your data.php
-$userStmt = $pdo->prepare("SELECT initial_capital FROM user WHERE user_id = 1");
-$userStmt->execute();
-$userData = $userStmt->fetch();
-$initialCapital = (float)($userData['initial_capital'] ?? 0);
 
-// New Correct Balance calculation
-$currentBalance = $initialCapital + $totalIncome - $totalExpense;
+
+// Balance calculation
+$currentBalance = $totalIncome - $totalExpense;
 
 
 //For Reports Financial Insights Feature

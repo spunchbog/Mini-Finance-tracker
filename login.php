@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $email = mysqli_real_escape_string($conn, $_POST['Email']);
         $password_attempt = $_POST['password'];
 
-        // FETCHING: Added 'is_verified' and 'setup_complete' to the query
+        // FETCHING: You can leave setup_complete in the query safely without issues
         $query = "SELECT user_id, role, password, is_verified, setup_complete 
               FROM user 
               WHERE email = '$email' LIMIT 1";
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 if ($row['is_verified'] == 0) {
                     $err = "<p style='color:red;'>Please verify your email before logging in.</p>";
                 } 
-                // 3. CHECK: Setup Completion
+                // Log them in securely
                 else {
                     session_regenerate_id();
                     $_SESSION['user_id'] = $row['user_id'];
@@ -45,14 +45,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     // Update last_login timestamp
                     mysqli_query($conn, "UPDATE user SET last_login = NOW() WHERE user_id = " . intval($row['user_id']));
 
-                    // Redirect logic:
+                    // FIXED Redirect logic: Removed the setup_complete check
                     if ($_SESSION['role'] === 'admin') {
                         echo "<script>alert('Admin login successful!'); window.location.href='index.php';</script>";
-                    } elseif ($row['setup_complete'] == 0) {
-                        // Force users who haven't set their initial capital to InitialPage.php
-                        echo "<script>alert('Login successful! Redirecting to setup...'); window.location.href='InitialPage.php';</script>";
                     } else {
-                        // Regular user flow
+                        // Regular user flow goes directly to the main dashboard
                         echo "<script>alert('Login successful!'); window.location.href='dashboard.php';</script>";
                     }
                     exit;

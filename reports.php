@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// 2. LIVE SESSION GRAB: Replace the hardcoded 1111 ID with the real user
+// 2. LIVE SESSION GRAB: Securely capture the active logged-in user
 $user_id = intval($_SESSION['user_id']);
 
 // 3. Make sure the role matches their database entry (fallback to user if empty)
@@ -17,14 +17,9 @@ if (empty($_SESSION['role'])) {
     $_SESSION['role'] = 'user';
 }
 
-// 4. Run your setup verification query dynamically using the session's ID
-$check = mysqli_query($conn, "SELECT setup_complete FROM user WHERE user_id = $user_id");
-if (!$check) {
-    die("Reports Query Failed: " . mysqli_error($conn));
-}
-$user = mysqli_fetch_assoc($check);
+// ❌ OLD 'setup_complete' QUERY BLOCK COMPLETELY REMOVED FROM HERE TO PREVENT SQL ERRORS
 
-// 5. Pull in variables, categories, and calculations scoped to this user
+// 4. Pull in variables, categories, and calculations scoped to this user
 require_once 'data.php'; 
 ?>
 
