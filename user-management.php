@@ -77,8 +77,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_code'])) {
         $hashed_admin_password = password_hash($pending['password'], PASSWORD_DEFAULT);
         $escaped_hash = mysqli_real_escape_string($conn, $hashed_admin_password);
 
-        $insert_admin = "INSERT INTO user (email, password, role, is_verified, verification_token, initial_capital, setup_complete) 
-               VALUES ('$admin_email_escaped', '$escaped_hash', 'admin', 1, NULL, NULL, 1)";
+        // === FIXED: Removed initial_capital column and its corresponding NULL value completely ===
+        $insert_admin = "INSERT INTO user (email, password, role, is_verified, verification_token, setup_complete) 
+                        VALUES ('$admin_email_escaped', '$escaped_hash', 'admin', 1, NULL, 1)";
 
         if (mysqli_query($conn, $insert_admin)) {
             $admin_message = '<div class="alert alert-success">New admin created successfully with an encrypted password.</div>';
