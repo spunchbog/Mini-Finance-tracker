@@ -59,13 +59,15 @@ $buckets = [
 ];
 
 // 4. THE CALCULATION ENGINE
+$chartTypeFilter = isset($_GET['type']) ? $_GET['type'] : 'expense';
+
 foreach ($transactions as $trx) {
     $trxTime = strtotime($trx['date']);
     $amt = (float)$trx['amt'];
     $catName = $trx['cat']; // This comes from the 'category' table join
 
     // We only want to chart EXPENSES (negative amounts)
-    if ($trx['type'] === 'expense') {
+    if ($trx['type'] === $chartTypeFilter) {
         
         // Helper logic to add to bucket if date matches
         if ($trxTime >= $today)          $buckets['today'][$catName]      = ($buckets['today'][$catName] ?? 0) + $amt;

@@ -129,7 +129,19 @@ require_once 'data.php'; // Pulls in timeline arrays, dropdown math, and card to
             <!-- Left Side: Two Charts stacked -->
             <div class="col-12 col-md-5 d-flex flex-column" style="gap: 15px;">
                 <div class="card p-3 flex-grow-1 shadow-sm">
-                    <h6 class="mb-0">Spending Overview</h6>
+                <div class="d-flex justify-content-between">
+                    <h6 class="mb-0">Cash Flow Overview</h6>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-white border shadow-sm dropdown-toggle fw-semibold text-muted" type="button" id="chartTypeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            View: <span id="chartTypeLabel">Expense Only</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="chartTypeDropdown">
+                            <li><a class="dropdown-item text-danger active chart-filter-item" href="#" data-chart-type="expense">Expense Only</a></li>
+                            <li><a class="dropdown-item text-success chart-filter-item" href="#" data-chart-type="income">Income Only</a></li>
+                            <li><a class="dropdown-item chart-filter-item" href="#" data-chart-type="all">All Types</a></li>
+                        </ul>
+                    </div>
+                </div>
 
                     <!--
                     <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg" style="max-height: 300px; overflow-y: auto;">
@@ -285,10 +297,8 @@ require_once 'data.php'; // Pulls in timeline arrays, dropdown math, and card to
         </div>
     </div> 
 </div>
-<!-- 1. Bootstrap Bundle (Essential for the dropdown to function) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- 2. Chart.js Library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
@@ -296,13 +306,12 @@ const trendCtx = document.getElementById('trendChart').getContext('2d');
 new Chart(trendCtx, {
     type: 'bar', 
     data: {
-        // Labels from PHP: ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May']
         labels: <?php echo json_encode($trendLabels); ?>,
         datasets: [{
             label: 'Income',
             data: <?php echo json_encode($finalTrendIncome); ?>,
             backgroundColor: '#88D38C',
-            borderRadius: 5 // Makes the bars look modern
+            borderRadius: 5
         }, {
             label: 'Expenses',
             data: <?php echo json_encode($finalTrendExpense); ?>,
@@ -313,60 +322,26 @@ new Chart(trendCtx, {
     options: {
         maintainAspectRatio: false,
         scales: {
-            y: {
-                beginAtZero: true,
-                grid: { display: false }, // Cleaner look
-                ticks: { font: { size: 10 } }
-            },
-            x: {
-                grid: { display: false },
-                ticks: { font: { size: 10 } }
-            }
+            y: { beginAtZero: true, grid: { display: false }, ticks: { font: { size: 10 } } },
+            x: { grid: { display: false }, ticks: { font: { size: 10 } } }
         },
         plugins: {
-            legend: {
-                display: true,
-                position: 'bottom',
-                labels: {
-                    boxWidth: 10,
-                    font: { size: 10 }
-                }
-            }
+            legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
         }
     }
 });
 </script>
-<script>
-    function applyFilter(range, label) {
-        // Update the button text
-        document.getElementById('rangeToggle').innerText = label;
-    
-        // Get the data for the range selected (e.g., '7_days')
-        const newData = allSpendingData[range];
 
-        if (newData) {
-            // Update the labels and data points
-            spendingChart.data.labels = newData.labels;
-            spendingChart.data.datasets[0].data = newData.data;
-        
-            // Redraw the chart with a smooth animation
-            spendingChart.update();
-        }
-    }
-</script>
 <script>
-// 1. Pull the pre-calculated data from data.php
 const ctx = document.getElementById('spendingChart').getContext('2d');
-const spendingOverviewChart = new Chart(ctx, {
+// 1. Create the custom plugin definition
+window.spendingChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
         labels: <?php echo json_encode($chartLabels); ?>,
         datasets: [{
-            // 2. Inject the filtered summary value metrics data matrix
             data: <?php echo json_encode($chartValues); ?>,
-            backgroundColor: [
-                '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796'
-            ],
+            backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796'],
             hoverOffset: 10,
             borderWidth: 2,
             borderColor: '#ffffff'
@@ -375,43 +350,29 @@ const spendingOverviewChart = new Chart(ctx, {
     options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '75%', // This creates the "hole" in the middle
+        cutout: '75%', 
         plugins: {
             tooltip: {
-            callbacks: {
-                label: function(context) {
-                    // 1. Get the raw value of the current slice
-                    let rawValue = context.raw;
-                    
-                    // 2. Calculate the total sum of all datasets combined
-                    let total = context.dataset.data.reduce((sum, value) => sum + Number(value), 0);
-                    
-                    // 3. Compute the percentage
-                    let percentage = ((rawValue / total) * 100).toFixed(1); // '1' means 1 decimal place (e.g., 25.5%)
-                    
-                    // 4. Return the custom label text format shown on hover
-                    return context.label + ': RM ' + rawValue + ' (' + percentage + '%)';
+                callbacks: {
+                    label: function(context) {
+                        let rawValue = context.raw;
+                        let total = context.dataset.data.reduce((sum, value) => sum + Number(value), 0);
+                        let percentage = ((rawValue / total) * 100).toFixed(1);
+                        return context.label + ': RM' + rawValue + ' (' + percentage + '%)';
+                    }
                 }
-            }
-        },
+            },
             legend: {
                 display: true,
                 position: 'bottom',
-                labels: {
-                    usePointStyle: true,
-                    padding: 20,
-                    font: { size: 12 }
-                },
+                labels: { usePointStyle: true, padding: 20, font: { size: 12 } }
             }
         },
-        animation: {
-            duration: 1500,     // Time in milliseconds for the animation to finish (e.g., 1.5 seconds)
-            animateRotate: true, // TRUE: The chart spins into existence on initial load
-            animateScale: false  // TRUE: The chart expands outward from the center hole on load
-        }
+        animation: { duration: 1500, animateRotate: true, animateScale: false }
     }
 });
 </script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('tableSearchInput');
@@ -419,40 +380,70 @@ document.addEventListener('DOMContentLoaded', function () {
     const catFilter = document.getElementById('tableCategoryFilter');
     const tableBody = document.getElementById('transactionTableBody');
     
+    // Check elements first
     if (tableBody && searchInput && typeFilter && catFilter) {
         const tableRows = tableBody.getElementsByTagName('tr');
 
+        // FIXED PLACE: Safely initialized inside the functional matrix block
+        let activeChartType = 'expense';
+
+        // === ENGINE A: INDEPENDENT CHART UPDATER ===
+        function updateChartOnly() {
+            const filteredChartData = {};
+
+            for (let i = 0; i < tableRows.length; i++) {
+                const row = tableRows[i];
+                if (row.cells.length === 1 && row.cells[0].getAttribute('colspan')) continue;
+                
+                const rowType = row.getAttribute('data-type') ? row.getAttribute('data-type').toLowerCase().trim() : '';
+                const catElement = row.querySelector('.trx-category');
+                const amtElement = row.querySelector('.trx-type');
+
+                // Filter logic based ONLY on dropdown selection matrix
+                const matchesChartType = (activeChartType === 'all') || (rowType === activeChartType);
+
+                if (matchesChartType && amtElement && catElement) {
+                    const rawCatName = catElement.textContent.trim();
+                    const cleanAmt = amtElement.textContent.replace(/[+\-RM\s,]/g, '');
+                    const parsedValue = parseFloat(cleanAmt) || 0;
+
+                    if (!filteredChartData[rawCatName]) {
+                        filteredChartData[rawCatName] = 0;
+                    }
+                    filteredChartData[rawCatName] += parsedValue;
+                }
+            }
+
+            if (typeof spendingChart !== 'undefined') {
+                spendingChart.data.labels = Object.keys(filteredChartData);
+                spendingChart.data.datasets[0].data = Object.values(filteredChartData);
+                spendingChart.update(); 
+            }
+        }
+
+        // === ENGINE B: TABLE ONLY VIEW CONTROLLER ===
         function filterTable() {
-            // Read active values across all 3 filter parameters
             const textKeyword = searchInput.value.toLowerCase().trim();
             const selectedType = typeFilter.value.toLowerCase();
             const selectedCat  = catFilter.value.toLowerCase();
 
             for (let i = 0; i < tableRows.length; i++) {
                 const row = tableRows[i];
+                if (row.cells.length === 1 && row.cells[0].getAttribute('colspan')) continue;
                 
-                // Read row data attributes
                 const rowType = row.getAttribute('data-type') ? row.getAttribute('data-type').toLowerCase().trim() : '';
                 const rowCat  = row.getAttribute('data-category') ? row.getAttribute('data-category').toLowerCase().trim() : '';
                 
-                // Read search text components
                 const descElement = row.querySelector('.trx-description');
                 const catElement  = row.querySelector('.trx-category');
                 
                 const descText = descElement ? descElement.textContent.toLowerCase() : '';
                 const catText  = catElement ? catElement.textContent.toLowerCase() : '';
 
-                // --- EVALUATION CHECK MATRIX ---
-                // Condition 1: Matches Text Keyword Search
                 const matchesSearch = descText.includes(textKeyword) || catText.includes(textKeyword);
-                
-                // Condition 2: Matches Type Selection
                 const matchesType = (selectedType === 'all') || (rowType === selectedType);
-                
-                // Condition 3: Matches Category Selection
                 const matchesCategory = (selectedCat === 'all') || (rowCat === selectedCat);
 
-                // Row must pass all three filters simultaneously to remain visible
                 if (matchesSearch && matchesType && matchesCategory) {
                     row.style.display = '';
                 } else {
@@ -461,11 +452,29 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // Bind logic engine to trigger on input adjustments
+        // === ENGINE C: CHART DROPDOWN EVENT HANDLER ===
+        document.querySelectorAll('.chart-filter-item').forEach(item => {
+            item.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                document.querySelectorAll('.chart-filter-item').forEach(el => el.classList.remove('active'));
+                this.classList.add('active');
+
+                activeChartType = this.getAttribute('data-chart-type');
+                document.getElementById('chartTypeLabel').innerText = this.textContent.trim();
+
+                // Triggers structural calculation for the chart without touching table displays
+                updateChartOnly();
+            });
+        });
+
+        // Event listeners restricted purely to ledger DOM changes
         searchInput.addEventListener('keyup', filterTable);
         typeFilter.addEventListener('change', filterTable);
         catFilter.addEventListener('change', filterTable);
+        
+        // Run once on document ready to parse the initial 'expense' setting smoothly
+        updateChartOnly();
     }
 });
 </script>
-</body>

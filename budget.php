@@ -45,8 +45,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['set_budget'])) {
     }
 }
 
-// 3. FETCH ALL AVAILABLE CATEGORIES FOR THE DROPDOWN SELECTOR
-$categories_stmt = $pdo->query("SELECT category_id, name FROM category ORDER BY name ASC");
+// 3. FETCH ONLY CATEGORIES THAT HAVE ACTUALLY BEEN USED FOR EXPENSES
+$table_name = $pdo->query("SHOW TABLES LIKE 'transaction'")->fetch() ? "transaction" : "transactions";
+
+$categories_stmt = $pdo->prepare("
+    SELECT DISTINCT c.category_id, c.name 
+    FROM category c
+    JOIN `$table_name` t ON c.category_id = t.category_id
+    WHERE t.type = 'expense' 
+    ORDER BY c.name ASC
+");
+$categories_stmt->execute();
 $categories = $categories_stmt->fetchAll();
 
 // 4. FETCH CURRENT MONTH'S EXPENSES BY CATEGORY ID
@@ -76,7 +85,7 @@ if ($amt_check) {
     $amount_column = "amt";
 }
 
-// Securely pool sums up inside database engine before extraction array mapping
+// === FIXED: No more category table JOIN. Everything filters on the transaction table columns directly ===
 $expense_query = "SELECT category_id, SUM(ABS(`$amount_column`)) as total_spent 
                   FROM `$table_name` 
                   WHERE user_id = :user_id 
@@ -94,7 +103,6 @@ $expense_stmt->execute([
 while ($row = $expense_stmt->fetch()) {
     $expenses[(int)$row['category_id']] = (float)$row['total_spent'];
 }
-
 // 5. FETCH CONFIGURED BUDGET STATUS WITH JOINED CATEGORY NAMES
 $budget_status_stmt = $pdo->prepare("
     SELECT b.category_id, b.limit_amount, c.name 
@@ -163,7 +171,7 @@ $budget_statuses = $budget_status_stmt->fetchAll();
                     <th>Category Name</th>
                     <th>Defined Budget Limit</th>
                     <th>Total Spent (This Month)</th>
-                    <th>Status Assessment</th>
+                    <th style="width: 25%;">Budget Utilization</th> <th>Status Assessment</th>
                 </tr>
             </thead>
             <tbody>
@@ -175,11 +183,45 @@ $budget_statuses = $budget_status_stmt->fetchAll();
                         $limit = (float)$row['limit_amount'];
                         $spent = isset($expenses[$cat_id]) ? $expenses[$cat_id] : 0.00;
                         $over_budget = $spent > $limit;
+
+                        // === NEW BULLETPROOF CALCULATION ===
+                        $clean_limit = (float)$limit;
+                        $clean_spent = (float)$spent;
+
+                        $percent = $clean_limit > 0 ? ($clean_spent / $clean_limit) * 100 : 0;
+                        
+                        // Cap the visual bar fill at 100% so it doesn't break your table styling layout
+                        $bar_width = min($percent, 100); 
+
+                        // Dynamically assign color utility states based on spending thresholds
+                        if ($percent >= 100) {
+                            $bar_color = 'bg-danger'; // Solid Red if maxed or over
+                        } elseif ($percent >= 80) {
+                            $bar_color = 'bg-warning'; // Yellow warning threshold at 80%
+                        } else {
+                            $bar_color = 'bg-success'; // Safe Green
+                        }
                     ?>
                         <tr>
                             <td><strong><?php echo htmlspecialchars($row['name']); ?></strong></td>
                             <td>RM <?php echo number_format($limit, 2); ?></td>
                             <td>RM <?php echo number_format($spent, 2); ?></td>
+                            
+                            <td>
+                                <div class="d-flex align-items-center justify-content-between mb-1 small text-muted">
+                                    <span><?php echo number_format($percent, 1); ?>% used</span>
+                                </div>
+                                <div class="progress" style="height: 10px; background-color: #e9ecef; border-radius: 5px;">
+                                    <div class="progress-bar <?php echo $bar_color; ?>" 
+                                        role="progressbar" 
+                                        style="width: <?php echo $bar_width; ?>%; border-radius: 5px;" 
+                                        aria-valuenow="<?php echo $bar_width; ?>" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="100">
+                                    </div>
+                                </div>
+                            </td>
+
                             <td>
                                 <?php if ($over_budget): ?>
                                     <span style="color:red; font-weight:bold;">⚠️ Over Budget Threshold</span>
