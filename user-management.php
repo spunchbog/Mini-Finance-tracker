@@ -113,10 +113,10 @@ $result = mysqli_query($conn, $sql);
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-<div id="wrapper" class="d-flex w-100" style="min-height: 100vh; overflow: visible;">
+<div id="wrapper" class="d-flex vh-100 w-100" style="overflow: hidden;">
     <?php include 'sidebar.php'; ?>
 
-    <div id="page-content-wrapper" class="flex-grow-1 d-flex flex-column p-4" style="overflow-y: auto; min-height: 100vh;">
+    <div id="page-content-wrapper" class="flex-grow-1 d-flex flex-column p-4" style="overflow: hidden;">
 
         <h2>User Management</h2>
         <p>Below is a searchable table of all registered users. You can view details or deactivate accounts.</p>
