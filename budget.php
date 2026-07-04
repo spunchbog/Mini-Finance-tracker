@@ -196,8 +196,8 @@ $budget_statuses = $budget_status_stmt->fetchAll();
                         // Dynamically assign color utility states based on spending thresholds
                         if ($percent >= 100) {
                             $bar_color = 'bg-danger'; // Solid Red if maxed or over
-                        } elseif ($percent >= 80) {
-                            $bar_color = 'bg-warning'; // Yellow warning threshold at 80%
+                        } elseif ($percent >= 75) {
+                            $bar_color = 'bg-warning'; // Yellow warning threshold at 75%
                         } else {
                             $bar_color = 'bg-success'; // Safe Green
                         }
@@ -208,25 +208,29 @@ $budget_statuses = $budget_status_stmt->fetchAll();
                             <td>RM <?php echo number_format($spent, 2); ?></td>
                             
                             <td>
-                                <div class="d-flex align-items-center justify-content-between mb-1 small text-muted">
-                                    <span><?php echo number_format($percent, 1); ?>% used</span>
-                                </div>
-                                <div class="progress" style="height: 10px; background-color: #e9ecef; border-radius: 5px;">
-                                    <div class="progress-bar <?php echo $bar_color; ?>" 
-                                        role="progressbar" 
-                                        style="width: <?php echo $bar_width; ?>%; border-radius: 5px;" 
-                                        aria-valuenow="<?php echo $bar_width; ?>" 
-                                        aria-valuemin="0" 
-                                        aria-valuemax="100">
+                                <div style="max-width: 240px; width: 100%;">
+                                    <div class="d-flex align-items-center justify-content-between mb-1 small text-muted">
+                                        <span><?php echo number_format($percent, 1); ?>% used</span>
+                                    </div>
+                                    <div class="progress" style="height: 10px; background-color: #e9ecef; border-radius: 5px;">
+                                        <div class="progress-bar <?php echo $bar_color; ?>" 
+                                            role="progressbar" 
+                                            style="width: <?php echo $bar_width; ?>%; border-radius: 5px;" 
+                                            aria-valuenow="<?php echo $bar_width; ?>" 
+                                            aria-valuemin="0" 
+                                            aria-valuemax="100">
+                                        </div>
                                     </div>
                                 </div>
                             </td>
 
                             <td>
-                                <?php if ($over_budget): ?>
-                                    <span style="color:red; font-weight:bold;">⚠️ Over Budget Threshold</span>
+                                <?php if ($percent >= 100): ?>
+                                    <span style="color: red; font-weight: bold;">⚠️ Over Budget Threshold</span>
+                                <?php elseif ($percent >= 75): ?>
+                                    <span style="color: #ffc107; font-weight: bold;">⚠️ Warning: Nearing Limit</span>
                                 <?php else: ?>
-                                    <span style="color:green; font-weight:bold;">✅ Within Limit Safezone</span>
+                                    <span style="color: green; font-weight: bold;">✅ Within Limit Safezone</span>
                                 <?php endif; ?>
                             </td>
                         </tr>

@@ -341,7 +341,20 @@ window.spendingChart = new Chart(ctx, {
         labels: <?php echo json_encode($chartLabels); ?>,
         datasets: [{
             data: <?php echo json_encode($chartValues); ?>,
-            backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796'],
+            backgroundColor: [
+                            '#4e73df', // Original Royal Blue
+                            '#1cc88a', // Original Mint Green
+                            '#36b9cc', // Original Teal Blue
+                            '#f6c23e', // Original Warm Yellow
+                            '#e74a3b', // Original Coral Red
+                            '#858796', // Original Slate Gray
+                            '#9b5de5', // Rich Violet
+                            '#f15bb5', // Hot Pink
+                            '#ff9f1c', // Deep Orange
+                            '#00b4d8', // Vivid Sky Blue
+                            '#52b788', // Forest Green
+                            '#748cab'  // Steel Blue
+                        ],
             hoverOffset: 10,
             borderWidth: 2,
             borderColor: '#ffffff'
