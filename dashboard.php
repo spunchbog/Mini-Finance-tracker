@@ -18,6 +18,29 @@ if (empty($_SESSION['role'])) {
 }
 
 
+// ==========================================
+// SECURE TRANSACTION DELETION HANDLER
+// ==========================================
+if (isset($_GET['delete_id'])) {
+    $delete_id = intval($_GET['delete_id']);
+    
+    // Auto-detect table structure dynamically from your schema rules
+    $table_name = $pdo->query("SHOW TABLES LIKE 'transaction'")->fetch() ? "transaction" : "transactions";
+    $id_col     = $pdo->query("SHOW COLUMNS FROM `$table_name` LIKE 'transaction_id'")->fetch() ? "transaction_id" : "id";
+    
+    // Double check that the transaction actually belongs to the logged-in user before deleting!
+    $stmt = $pdo->prepare("DELETE FROM `$table_name` WHERE `$id_col` = :id AND user_id = :user_id");
+    $executed = $stmt->execute([
+        ':id' => $delete_id,
+        ':user_id' => $user_id
+        ]);
+        
+        if ($executed) {
+            // Refresh the page instantly to clear the query parameters from the URL string
+            header("Location: dashboard.php?delete_success=1");
+            exit;
+            }
+            }
 require_once 'data.php'; // Pulls in timeline arrays, dropdown math, and card totals
 ?>
 
@@ -78,17 +101,23 @@ require_once 'data.php'; // Pulls in timeline arrays, dropdown math, and card to
         <h5 class="modal-title fw-bold" id="customDateModalLabel">Select Custom Range</h5>
         <button type="button" class="btn-close" data-bs-shadow="none" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form method="GET" action="">
+      
+      <form method="GET" action="" id="customDateForm">
         <input type="hidden" name="view" value="custom">
         <div class="modal-body py-4">
+            
+            <div id="dateErrorAlert" class="alert alert-danger d-none py-2 small fw-semibold mb-3">
+                ⚠️ Start date must be earlier than or equal to the end date.
+            </div>
+
             <div class="row">
                 <div class="col-6">
                     <label class="form-label text-muted small fw-bold">START DATE</label>
-                    <input type="date" name="start" class="form-control" value="<?= $_GET['start'] ?? date('Y-m-01') ?>" required>
+                    <input type="date" id="startDateInput" name="start" class="form-control" value="<?= $_GET['start'] ?? date('Y-m-01') ?>" required>
                 </div>
                 <div class="col-6">
                     <label class="form-label text-muted small fw-bold">END DATE</label>
-                    <input type="date" name="end" class="form-control" value="<?= $_GET['end'] ?? date('Y-m-d') ?>" required>
+                    <input type="date" id="endDateInput" name="end" class="form-control" value="<?= $_GET['end'] ?? date('Y-m-d') ?>" required>
                 </div>
             </div>
         </div>
@@ -100,7 +129,6 @@ require_once 'data.php'; // Pulls in timeline arrays, dropdown math, and card to
     </div>
   </div>
 </div>
-
         <!-- Top Row: Metric Cards (Stays at the top) -->
         
         <div class="row mb-3" style="flex: 0 1 auto;">
@@ -142,36 +170,6 @@ require_once 'data.php'; // Pulls in timeline arrays, dropdown math, and card to
                         </ul>
                     </div>
                 </div>
-
-                    <!--
-                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg" style="max-height: 300px; overflow-y: auto;">
-                            <li><h6 class="dropdown-header">Standard</h6></li>
-                            <li><a class="dropdown-item" href="#" onclick="applyFilter('today', 'Today')">Today</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="applyFilter('this_week', 'This Week')">This Week</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="applyFilter('this_month', 'This Month')">This Month</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="applyFilter('this_year', 'This Year')">This Year</a></li>
-                
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Trailing Periods</h6></li>
-                            <li><a class="dropdown-item" href="#" onclick="applyFilter('7_days', 'Last 7 Days')">Last 7 Days</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="applyFilter('30_days', 'Last 30 Days')">Last 30 Days</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="applyFilter('3_months', 'Last 3 Months')">Last 3 Months</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="applyFilter('6_months', 'Last 6 Months')">Last 6 Months</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="applyFilter('1_year', 'Last 1 Year')">Last 1 Year</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="applyFilter('5_years', 'Last 5 Years')">Last 5 Years</a></li>
-                
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-primary fw-bold" href="#" onclick="showCustomPicker()">Custom Range...</a></li>
-                        </ul> -->
-                    <!--
-                <div id="customDateContainer" class="d-none bg-light p-2 rounded mb-3 border">
-                        <div class="d-flex gap-2 align-items-center">
-                            <input type="date" id="startDate" class="form-control form-control-sm">
-                            <span class="small text-muted">to</span>
-                            <input type="date" id="endDate" class="form-control form-control-sm">
-                            <button class="btn btn-primary btn-sm" onclick="applyCustomRange()">Go</button>
-                        </div>
-                    </div> -->
                     <div style="height: 200px; width: 100%; margin: 0 auto; position: relative; flex-grow: 1;">
                         <canvas id="spendingChart"></canvas>
                     </div>
@@ -183,24 +181,29 @@ require_once 'data.php'; // Pulls in timeline arrays, dropdown math, and card to
                     </div>
                 </div>
             </div>
-<!-- Right Side: Recent Transactions Table -->
-<div class="col-12 col-md-7 d-flex flex-column">
-    <div class="card p-3 shadow-sm h-100" style="overflow: hidden;">
+<div class="col-12 col-md-7 d-flex flex-column" style="height: 100%;">
+    <div class="card p-3 shadow-sm h-100 d-flex flex-column" style="overflow: hidden;">
         
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
-            <h5 class="mb-0">Recent Transactions</h5>
+        <?php if (isset($_GET['delete_success']) && $_GET['delete_success'] == 1): ?>
+            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+                <span class="me-2">✅</span>
+                <div class="fw-medium text-success" style="font-size: 0.85rem;">Transaction permanently deleted successfully!</div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+        
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-3 flex-shrink-0">
+            <h5 class="mb-0 fw-bold tracking-tight" style="letter-spacing: -0.3px;">Recent Transactions</h5>
             
-            <div class="d-flex align-items-center gap-2 style-wrapper" style="max-width: 420px; width: 100%;">
-                
-                <select id="tableTypeFilter" class="form-select form-select-sm fw-semibold text-muted shadow-sm" style="width: 130px;">
+            <div class="d-flex align-items-center gap-2 style-wrapper" style="max-width: 440px; width: 100%;">
+                <select id="tableTypeFilter" class="form-select form-select-sm fw-semibold text-muted shadow-sm ps-2" style="width: 130px; border-color: var(--border-subtle); border-radius: 8px;">
                     <option value="all">All Types</option>
                     <option value="income">Income</option>
                     <option value="expense">Expense</option>
                 </select>
-                <select id="tableCategoryFilter" class="form-select form-select-sm fw-semibold text-muted shadow-sm" style="width: 135px;">
+                <select id="tableCategoryFilter" class="form-select form-select-sm fw-semibold text-muted shadow-sm ps-2" style="width: 155px; border-color: var(--border-subtle); border-radius: 8px;">
                     <option value="all">All Categories</option>
                     <?php 
-                    // Dynamically extract unique categories present in your transaction stack
                     $uniqueCats = array_unique(array_column($transactions, 'cat'));
                     sort($uniqueCats);
                     foreach ($uniqueCats as $catName): 
@@ -212,81 +215,79 @@ require_once 'data.php'; // Pulls in timeline arrays, dropdown math, and card to
                     endforeach; 
                     ?>
                 </select>
-
-                <div class="input-group shadow-sm flex-grow-1">
-                    <span class="input-group-text bg-white border-end-0 text-muted py-1 px-2">🔍</span>
-                    <input type="text" id="tableSearchInput" class="form-control border-start-0 ps-0 fw-medium form-control-sm" placeholder="Search...">
+                <div class="input-group shadow-sm flex-grow-1 custom-search-group">
+                    <span class="input-group-text bg-white text-muted py-1 px-2">🔍</span>
+                    <input type="text" id="tableSearchInput" class="form-control ps-0 fw-medium form-control-sm" placeholder="Search...">
                 </div>
-                
             </div>
         </div>
 
-
-
-        
-        <!-- CHANGED: Added max-height (e.g., 350px or 400px) so it triggers scrolling -->
-        <div class="table-responsive" style="overflow-y: auto; max-height: 500px;">
-            <table class="table table-hover align-middle mb-0">
-                <!-- Added a solid background color to the header so text doesn't bleed through when scrolling underneath -->
-                <thead class="table-light sticky-top" style="z-index: 10; background-color: #f8f9fa;">
+        <div class="adaptive-table-container flex-grow-1 min-height-0">
+            <table class="table table-hover align-middle mb-0 custom-dashboard-table">
+                <thead>
                     <tr>
-                        <th>Category</th>
-                        <th>Description</th>
-                        <th>Amount</th>
-                        <th>Date</th>
+                        <th style="width: 25%;">Category</th>
+                        <th style="width: 35%;">Description</th>
+                        <th style="width: 20%;">Amount</th>
+                        <th style="width: 15%;">Date</th>
+                        <th class="text-end pe-3" style="width: 5%;"></th>
                     </tr>
                 </thead>
                 <tbody id="transactionTableBody">
                     <?php if (!empty($transactions)): ?>
                         <?php 
                             foreach ($transactions as $trx): 
-                                // 1. Convert the database timestamp into a comparable UNIX number
                                 $trxTime = strtotime($trx['date']);
                                 
-                                // 2. RUN THE SAME EXACT DATE VALIDATION RULES AS THE HEADER CARDS
                                 if ($viewFilter === 'weekly') {
-                                    if ($trxTime < $mondayThisWeek || $trxTime > $sundayThisWeek) {
-                                        continue; // Skip this row if it's out of bounds
-                                    }
+                                    if ($trxTime < $mondayThisWeek || $trxTime > $sundayThisWeek) continue;
                                 } elseif ($viewFilter === '7_days') {
-                                    if ($trxTime < $sevenDaysAgo || $trxTime > $todayCeiling) {
-                                        continue;
-                                    }
+                                    if ($trxTime < $sevenDaysAgo || $trxTime > $todayCeiling) continue;
                                 } elseif ($viewFilter === '30_days') {
-                                    if ($trxTime < $thirtyDaysAgo || $trxTime > $todayCeiling) {
-                                        continue;
-                                    }
+                                    if ($trxTime < $thirtyDaysAgo || $trxTime > $todayCeiling) continue;
                                 } elseif ($viewFilter === 'all') {
-                                    if ($trxTime > $todayCeiling) {
-                                        continue;
-                                    }
+                                    if ($trxTime > $todayCeiling) continue;
                                 } elseif ($viewFilter === 'custom') {
-                                    if ($trxTime < $customStart || $trxTime > $customEnd) {
-                                        continue;
-                                    }
+                                    if ($trxTime < $customStart || $trxTime > $customEnd) continue;
                                 } else {
-                                    // Default: Monthly View
-                                    if ($trxTime < $thisMonthStart || $trxTime > $thisMonthEnd) {
-                                        continue;
-                                    }
+                                    if ($trxTime < $thisMonthStart || $trxTime > $thisMonthEnd) continue;
                                 }
-                            ?>
-                            <tr data-type="<?= htmlspecialchars($trx['type']) ?>" data-category="<?= htmlspecialchars(strtolower(trim($trx['cat']))) ?>">                                <td class="trx-category"><?= htmlspecialchars($trx['cat']) ?></td>
-                                <td class="trx-description"><?= htmlspecialchars($trx['description']) ?></td>
-                                <td class="trx-type <?php echo ($trx['type'] === 'income') ? 'text-success fw-semibold' : 'text-danger fw-semibold'; ?>">
-                                    <?php 
-                                        $sign = ($trx['type'] === 'income') ? '+' : '-';
-                                        echo $sign . ' RM ' . number_format(abs($trx['amt']), 2); 
-                                    ?>
+                                
+                                $isIncome = ($trx['type'] === 'income');
+                        ?>
+                            <tr data-type="<?= htmlspecialchars($trx['type']) ?>" data-category="<?= htmlspecialchars(strtolower(trim($trx['cat']))) ?>">
+                                <td class="trx-category">
+                                    <span class="badge-custom <?= $isIncome ? 'badge-income' : 'badge-expense' ?>">
+                                        <?= htmlspecialchars($trx['cat']) ?>
+                                    </span>
                                 </td>
-                                <td class="text-muted small">
+                                <td class="trx-description text-main fw-medium text-truncate" style="max-width: 180px;">
+                                    <?= htmlspecialchars($trx['description']) ?>
+                                </td>
+                                <td class="trx-type <?= $isIncome ? 'text-success' : 'text-danger' ?> fw-bold">
+                                    <?= ($isIncome ? '+ ' : '- ') . 'RM ' . number_format(abs($trx['amt']), 2) ?>
+                                </td>
+                                <td class="text-muted small fw-medium">
                                     <?= date('M d, Y', strtotime($trx['date'])) ?>
+                                </td>
+                                <td class="text-end pe-3">
+                                    <?php if (isset($trx['transaction_id'])): ?>
+                                        <a href="?view=<?= htmlspecialchars($viewFilter ?? 'monthly') ?>&delete_id=<?= $trx['transaction_id'] ?>" 
+                                           class="btn-delete-action" 
+                                           onclick="return confirm('Are you sure you want to permanently delete this transaction?');" 
+                                           title="Delete transaction">
+                                            ✕
+                                        </a>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="4" class="text-center text-muted py-4">No recent transactions tracked yet.</td>
+                            <td colspan="5" class="text-center text-muted py-5">
+                                <span class="d-block mb-1" style="font-size: 1.25rem;">📄</span>
+                                <small class="fw-medium">No recent transactions tracked yet.</small>
+                            </td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
@@ -362,6 +363,11 @@ window.spendingChart = new Chart(ctx, {
     },
     options: {
         responsive: true,
+        animation: {
+        animateRotate: true,  // Spins the doughnut slices on load
+        animateScale: true,   // Fades them in from the center
+        duration: 1000        // Smooth entry speed (in milliseconds)
+    },
         maintainAspectRatio: false,
         cutout: '75%', 
         plugins: {
@@ -437,6 +443,9 @@ document.addEventListener('DOMContentLoaded', function () {
         // === ENGINE B: TABLE ONLY VIEW CONTROLLER ===
         function filterTable() {
             const textKeyword = searchInput.value.toLowerCase().trim();
+            // Create a secondary keyword variation that strips symbols for effortless number hunting
+            const numericKeyword = textKeyword.replace(/[+\-rm\s,]/g, ''); 
+
             const selectedType = typeFilter.value.toLowerCase();
             const selectedCat  = catFilter.value.toLowerCase();
 
@@ -449,11 +458,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 
                 const descElement = row.querySelector('.trx-description');
                 const catElement  = row.querySelector('.trx-category');
+                const amtElement  = row.querySelector('.trx-type');
+                // Targets the small/muted text cell inside the 4th column slot
+                const dateElement = row.cells[3]; 
                 
                 const descText = descElement ? descElement.textContent.toLowerCase() : '';
                 const catText  = catElement ? catElement.textContent.toLowerCase() : '';
+                const dateText = dateElement ? dateElement.textContent.toLowerCase() : '';
+                
+                // Get raw amount text and clean it for numeric-only matching
+                const amtText  = amtElement ? amtElement.textContent.toLowerCase() : '';
+                const cleanAmtText = amtText.replace(/[+\-rm\s,]/g, '');
 
-                const matchesSearch = descText.includes(textKeyword) || catText.includes(textKeyword);
+                // Updated to evaluate description, category, formatted date, or amount fields
+                const matchesSearch = descText.includes(textKeyword) || 
+                                      catText.includes(textKeyword) || 
+                                      dateText.includes(textKeyword) ||
+                                      (numericKeyword !== '' && cleanAmtText.includes(numericKeyword));
+
                 const matchesType = (selectedType === 'all') || (rowType === selectedType);
                 const matchesCategory = (selectedCat === 'all') || (rowCat === selectedCat);
 
@@ -488,6 +510,21 @@ document.addEventListener('DOMContentLoaded', function () {
         
         // Run once on document ready to parse the initial 'expense' setting smoothly
         updateChartOnly();
+    }
+});
+</script>
+<script>
+document.getElementById('customDateForm').addEventListener('submit', function(e) {
+    const startDate = document.getElementById('startDateInput').value;
+    const endDate = document.getElementById('endDateInput').value;
+    const alertBox = document.getElementById('dateErrorAlert');
+
+    // Compare date values sequentially
+    if (startDate > endDate) {
+        e.preventDefault(); // Stop form from submitting and refreshing the page
+        alertBox.classList.remove('d-none'); // Reveal the Bootstrap alert box
+    } else {
+        alertBox.classList.add('d-none'); // Safe structure, keep hidden
     }
 });
 </script>

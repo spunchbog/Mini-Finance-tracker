@@ -16,6 +16,7 @@ $user_id = intval($_SESSION['user_id']);
 // ADD THE WHERE FILTER HERE
 $query = "
     SELECT 
+        t.transaction_id,  
         t.description AS description, 
         c.name AS cat, 
         t.date, 
@@ -30,9 +31,6 @@ $query = "
 $stmt = $pdo->prepare($query);
 $stmt->execute([':user_id' => $user_id]);
 $transactions = $stmt->fetchAll();
-
-// Now the rest of your logic (Buckets, Thresholds, Calculations) 
-// stays EXACTLY the same! It will loop through the DB data instead.
 
 // 2. DEFINE TIME THRESHOLDS
 $today          = strtotime('today');
@@ -298,79 +296,140 @@ $finalTrendExpense = array_values($trendExpense);
 $currentBalance = $totalIncome - $totalExpense;
 
 
-// For Reports Financial Insights Feature
-// FIXED: Changed to prepare() and added the user_id filtering condition
+// ========================================================
+// 💡 FINANCIAL INSIGHTS FEATURE (SELF-CONTAINED STRUCTURAL CHECK)
+// ========================================================
+
+// Auto-detect structure inside data.php if not already passed from the main page
+if (!isset($table_name) || !isset($amt_col) || !isset($date_col)) {
+    $table_name = $pdo->query("SHOW TABLES LIKE 'transaction'")->fetch() ? "transaction" : "transactions";
+    $date_col   = $pdo->query("SHOW COLUMNS FROM `$table_name` LIKE 'transaction_date'")->fetch() ? "transaction_date" : "date";
+    $amt_col    = $pdo->query("SHOW COLUMNS FROM `$table_name` LIKE 'amt'")->fetch() ? "amt" : "amount";
+}
+
+// 1. Fetch highest spending category (Weekly - Last 7 Days)
 $topCatStmt = $pdo->prepare("
-    SELECT c.name AS category_name, SUM(ABS(t.amount)) AS total_spent
-    FROM transaction t
+    SELECT c.name AS category_name, SUM(ABS(t.`$amt_col`)) AS total_spent
+    FROM `$table_name` t
     JOIN category c ON t.category_id = c.category_id
-    WHERE t.type = 'expense' AND t.user_id = :user_id
+    WHERE t.type = 'expense' 
+      AND t.user_id = :user_id
+      AND t.`$date_col` >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
     GROUP BY t.category_id
     ORDER BY total_spent DESC
     LIMIT 1
 ");
 
-// Pass the dynamic session ID into the execution array
 $topCatStmt->execute([':user_id' => $user_id]);
 $topCategoryData = $topCatStmt->fetch();
 
-// Store values for layout display
 $highestSpendingCategory = $topCategoryData['category_name'] ?? 'None';
 $highestSpendingAmount = (float)($topCategoryData['total_spent'] ?? 0);
-// 1. Total spent in the last 7 days (This Week)
-$thisWeekStmt = $pdo->query("
-    SELECT SUM(ABS(amount)) AS total 
-    FROM transaction 
-    WHERE type = 'expense' 
-      AND date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-");
-$thisWeekTotal = (float)($thisWeekStmt->fetch()['total'] ?? 0);
+
+
 // 2. Fetch trailing 7-day spending total (This Week)
-$thisWeekStmt = $pdo->query("
-    SELECT SUM(ABS(t.amount)) AS total 
-    FROM transaction t
+$thisWeekStmt = $pdo->prepare("
+    SELECT SUM(ABS(t.`$amt_col`)) AS total 
+    FROM `$table_name` t
     WHERE t.type = 'expense' 
-      AND t.date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+      AND t.user_id = :user_id
+      AND t.`$date_col` >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
 ");
+$thisWeekStmt->execute([':user_id' => $user_id]);
 $thisWeekTotal = (float)($thisWeekStmt->fetch()['total'] ?? 0);
 
 
 // 3. Fetch preceding 7-day spending total (Last Week)
-$lastWeekStmt = $pdo->query("
-    SELECT SUM(ABS(t.amount)) AS total 
-    FROM transaction t
+$lastWeekStmt = $pdo->prepare("
+    SELECT SUM(ABS(t.`$amt_col`)) AS total 
+    FROM `$table_name` t
     WHERE t.type = 'expense' 
-      AND t.date >= DATE_SUB(CURDATE(), INTERVAL 14 DAY) 
-      AND t.date < DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+      AND t.user_id = :user_id
+      AND t.`$date_col` >= DATE_SUB(CURDATE(), INTERVAL 14 DAY) 
+      AND t.`$date_col` < DATE_SUB(CURDATE(), INTERVAL 7 DAY)
 ");
+$lastWeekStmt->execute([':user_id' => $user_id]);
 $lastWeekTotal = (float)($lastWeekStmt->fetch()['total'] ?? 0);
 
-// 4. Calculate comparative percentage change sentence
-$insightMessage = "No spending data from last week to compare."; // Default initial fallback value
+
+// 4. Calculate comparative multiplier (Smart Percentage vs Times Switcher)
+$insightMessage = "No spending data from last week to compare."; 
+
+$thisWeekFormatted = "RM " . number_format($thisWeekTotal, 2);
+$lastWeekFormatted = "RM " . number_format($lastWeekTotal, 2);
 
 if ($lastWeekTotal > 0) {
-    $percentageChange = (($thisWeekTotal - $lastWeekTotal) / $lastWeekTotal);
-    $roundedPercent = round(abs($percentageChange), 2);
+    $multiplier = $thisWeekTotal / $lastWeekTotal;
+    $roundedMultiplier = round($multiplier, 1); 
 
-    if ($percentageChange > 0) {
-        $insightMessage = "You spent <span class='text-danger fw-bold'>{$roundedPercent}x more</span> this week compared to last week.";
-    } elseif ($percentageChange < 0) {
-        $insightMessage = "You spent <span class='text-success fw-bold'>{$roundedPercent}x less</span> this week compared to last week.";
+    if ($multiplier > 1) {
+        if ($multiplier >= 3) {
+            // Massive spikes (3x or more) -> Use "35.3x as much"
+            $insightMessage = "You spent <span class='text-danger fw-bold'>{$roundedMultiplier}x as much</span> this week ({$thisWeekFormatted}) compared to last week ({$lastWeekFormatted}).";
+        } else {
+            // Normal increases -> Use percentage (e.g., "4% more")
+            $percentageIncrease = round(($multiplier - 1) * 100);
+            $insightMessage = "You spent <span class='text-danger fw-bold'>{$percentageIncrease}% more</span> this week ({$thisWeekFormatted}) compared to last week ({$lastWeekFormatted}).";
+        }
+    } elseif ($multiplier < 1) {
+        // Drops in spending -> Use percentage (e.g., "15% less")
+        $percentageDrop = round((1 - $multiplier) * 100);
+        $insightMessage = "Great job! You spent <span class='text-success fw-bold'>{$percentageDrop}% less</span> this week ({$thisWeekFormatted}) compared to last week ({$lastWeekFormatted}).";
     } else {
-        $insightMessage = "Your spending this week matches exactly with last week.";
+        $insightMessage = "Your spending this week matches exactly with last week ({$thisWeekFormatted}).";
     }
 } elseif ($thisWeekTotal > 0 && $lastWeekTotal == 0) {
-    $insightMessage = "You have started tracking new expenses this week.";
+    $insightMessage = "You started tracking new expenses this week! Total spent: <span class='fw-bold text-dark'>{$thisWeekFormatted}</span>.";
 } else {
-    // This catches the exact scenario causing your bug!
     $insightMessage = "No expenses recorded in the last 14 days to analyze.";
 }
-
 //savings rate calculation
 $savingsRate = 0;
 if ($totalIncome > 0) {
     $netSavings = $totalIncome - $totalExpense;
     $savingsRate = round(($netSavings / $totalIncome) * 100);
+}
+
+// ====================================================================
+// 9. BURN RATE & EMERGENCY RUNWAY CALCULATOR ENGINE for reports.php
+// ====================================================================
+
+// A. Calculate the total months of active data in the system
+$monthCount = count($trendLabels);
+if ($monthCount === 0) {
+    $monthCount = 1; // Prevent division by zero errors if database is brand new
+}
+
+// B. Calculate your Average Monthly Burn Rate based on historical tracking records
+// Uses lifetime values to establish an accurate running timeline baseline
+$avgMonthlyBurnRate = $lifetimeExpense / $monthCount;
+
+// C. Fetch current lifetime balance sheets asset position (Your total liquid cash pool)
+// If you have a separate 'accounts' or 'wallets' table, pull from there, otherwise use lifetime balance.
+$currentCashPool = $lifetimeBalance; 
+
+// D. Calculate your survival emergency runway metric
+$runwayMonths = 0;
+$runwayMessage = "";
+
+if ($avgMonthlyBurnRate > 0) {
+    if ($currentCashPool <= 0) {
+        $runwayMonths = 0;
+        $runwayMessage = "<span class='text-danger fw-bold'>⚠️ Immediate Risk:</span> Your savings are completely empty. You are out of cash.";
+    } else {
+        $runwayMonths = $currentCashPool / $avgMonthlyBurnRate;
+        $roundedRunway = number_format($runwayMonths, 1);
+        
+        if ($runwayMonths >= 6) {
+            $runwayMessage = "Your savings will last for <span class='text-success fw-bold'>{$roundedRunway} months</span>. You're in a great spot!";
+        } elseif ($runwayMonths >= 3) {
+            $runwayMessage = "Your savings will last for <span class='text-warning fw-bold'>{$roundedRunway} months</span>. This is a solid start, but try to aim for 6 months.";
+        } else {
+            $runwayMessage = "Your savings will only last for <span class='text-danger fw-bold'>{$roundedRunway} months</span>. Consider trimming down on spendings and aim for 3 months for safety.";
+        }
+    }
+} else {
+    $runwayMessage = "No monthly expenses recorded yet to establish a burn rate baseline.";
 }
 
 ?>

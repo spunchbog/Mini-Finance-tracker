@@ -49,44 +49,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_transaction'])) {
     <meta charset="UTF-8">
     <title>FinTrack - Log Transaction</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --bg-color: #fcfbf4;
-            --card-bg: #ffffff;
-            --text-main: #333;
-            --accent: #4a90e2;
-            --border-radius: 12px;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            font-family: 'Inter', -apple-system, sans-serif;
-            margin: 0;
-            overflow: hidden;
-        }
-
+        /* Scoped styles explicitly restricted to the input card module to protect sidebar UI definitions */
         .main-container {
             flex: 1;
             overflow-y: auto;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 40px 20px;
         }
 
         .input-card {
-            background: var(--card-bg);
+            background: #FFFFFF;
             padding: 40px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+            border-radius: 16px;
+            border: 1px solid var(--border-subtle);
+            box-shadow: var(--card-shadow);
             width: 100%;
             max-width: 500px;
         }
 
-        .card-header h2 { margin: 0; font-size: 22px; color: var(--text-main); }
-        .card-header p { color: #888; font-size: 14px; margin-top: 5px; margin-bottom: 30px; }
+        .card-header h2 { 
+            margin: 0; 
+            font-size: 22px; 
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-main); 
+        }
+        
+        .card-header p { 
+            color: var(--text-muted); 
+            font-size: 14px; 
+            margin-top: 6px; 
+            margin-bottom: 30px; 
+        }
 
         .type-buttons {
             display: grid;
@@ -96,41 +96,46 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_transaction'])) {
         }
 
         .type-btn {
-            padding: 18px;
-            border: 2px solid #eee;
-            border-radius: 8px;
-            background: #f9f9f9;
+            padding: 16px;
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            background: var(--background-cream);
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             color: var(--text-main);
         }
 
-        .type-btn:hover { border-color: var(--accent); background: #fff; }
+        .type-btn:hover { 
+            border-color: var(--text-muted); 
+            background: #FFFFFF; 
+        }
 
         .type-btn.active-expense {
-            border-color: #e74c3c;
-            background: #fff5f5;
-            color: #e74c3c;
+            border-color: var(--danger);
+            background: var(--danger-bg);
+            color: var(--danger);
+            box-shadow: 0 0 0 3px rgba(201, 42, 42, 0.08);
         }
 
         .type-btn.active-income {
-            border-color: #2ecc71;
-            background: #f0fff4;
-            color: #2ecc71;
+            border-color: var(--safe);
+            background: var(--safe-bg);
+            color: var(--safe);
+            box-shadow: 0 0 0 3px rgba(43, 138, 62, 0.08);
         }
 
         .form-section {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.5s ease, opacity 0.4s ease, margin-top 0.3s ease;
+            transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, margin-top 0.2s ease;
             opacity: 0;
             margin-top: 0;
         }
 
         .form-section.expanded {
-            max-height: 800px;
+            max-height: 900px;
             opacity: 1;
             margin-top: 25px;
         }
@@ -138,96 +143,108 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_transaction'])) {
         .form-group { margin-bottom: 20px; display: flex; flex-direction: column; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 
-        label { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #555; }
+        label { 
+            font-size: 13px; 
+            font-weight: 600; 
+            margin-bottom: 8px; 
+            color: var(--text-main); 
+        }
 
         input, select {
             padding: 12px;
-            border: 1px solid #eee;
+            border: 1px solid var(--border-subtle);
             border-radius: 8px;
-            background: #f9f9f9;
+            background: #FFFFFF;
             font-size: 15px;
-            transition: all 0.3s ease;
+            color: var(--text-main);
+            transition: all 0.2s ease;
         }
 
         input:focus, select:focus {
             outline: none;
-            border-color: var(--accent);
-            background: #fff;
-            box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1);
+            border-color: var(--text-muted);
+            box-shadow: 0 0 0 3px rgba(108, 114, 127, 0.08);
         }
 
         .submit-btn {
             width: 100%;
             padding: 14px;
-            background: var(--text-main);
+            background: var(--sidebar-bg);
             color: white;
             border: none;
             border-radius: 8px;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
             margin-top: 10px;
-            transition: transform 0.2s;
+            transition: transform 0.2s, opacity 0.2s;
         }
 
-        .submit-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+        .submit-btn:hover { 
+            transform: translateY(-2px); 
+            opacity: 0.95; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
 <div id="wrapper" class="d-flex vh-100 w-100" style="overflow: hidden;"> 
+    
     <?php include 'sidebar.php'; ?>
 
-    <div class="main-container">
-        <div class="input-card">
-            <div class="card-header">
-                <h2>Log New Transaction</h2>
-                <p>Choose whether you're logging an expense or income.</p>
-            </div>
+    <div id="page-content-wrapper" class="flex-grow-1 p-0">
+        <div class="main-container">
+            <div class="input-card">
+                <div class="card-header">
+                    <h2>Log New Transaction</h2>
+                    <p>Choose whether you're logging an expense or income.</p>
+                </div>
 
-            <div class="type-buttons">
-                <button class="type-btn" id="expenseBtn" onclick="selectType('expense')">💸 Expense</button>
-                <button class="type-btn" id="incomeBtn" onclick="selectType('income')">💰 Income</button>
-            </div>
+                <div class="type-buttons">
+                    <button class="type-btn" id="expenseBtn" onclick="selectType('expense')">💸 Expense</button>
+                    <button class="type-btn" id="incomeBtn" onclick="selectType('income')">💰 Income</button>
+                </div>
 
-            <div class="form-section" id="formSection">
-                <form action="transaction.php" method="POST" class="modern-form">
-                    <input type="hidden" name="type" id="typeInput" value="">
+                <div class="form-section" id="formSection">
+                    <form action="transaction.php" method="POST" class="modern-form">
+                        <input type="hidden" name="type" id="typeInput" value="">
 
-                    <div class="form-group">
-                        <label>Amount (RM)</label>
-                        <input type="number" name="amount" step="0.01" placeholder="0.00" required>
-                    </div>
-
-                    <div class="form-row">
                         <div class="form-group">
-                            <label>Category</label>
-                            <select name="category" id="categorySelect" onchange="toggleOtherInput()">
-                            </select>
+                            <label>Amount (RM)</label>
+                            <input type="number" name="amount" step="0.01" placeholder="0.00" required>
                         </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select name="category" id="categorySelect" onchange="toggleOtherInput()">
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Type</label>
+                                <input type="text" id="typeDisplay" readonly style="background: var(--background-cream); color: var(--text-muted);">
+                            </div>
+                        </div>
+
+                        <div id="otherCategoryDiv" class="form-group" style="display:none;">
+                            <label>Specify Category</label>
+                            <input type="text" name="other_category" placeholder="e.g., Medical, Gift...">
+                        </div>
+
                         <div class="form-group">
-                            <label>Type</label>
-                            <input type="text" id="typeDisplay" readonly style="background:#f0f0f0; color:#888;">
+                            <label>Date</label>
+                            <input type="date" name="date" required>
                         </div>
-                    </div>
 
-                    <div id="otherCategoryDiv" class="form-group" style="display:none;">
-                        <label>Specify Category</label>
-                        <input type="text" name="other_category" placeholder="e.g., Savings, Gift...">
-                    </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <input type="text" name="description" placeholder="e.g., Lunch at MMU">
+                        </div>
 
-                    <div class="form-group">
-                        <label>Date</label>
-                        <input type="date" name="date" required>
-                    </div>
+                        <button type="submit" name="add_transaction" class="submit-btn">Save Transaction</button>
+                    </form>
+                </div>
 
-                    <div class="form-group">
-                        <label>Description</label>
-                        <input type="text" name="description" placeholder="e.g., Lunch at MMU">
-                    </div>
-
-                    <button type="submit" name="add_transaction" class="submit-btn">Save Transaction</button>
-                </form>
             </div>
-
         </div>
     </div>
 </div>
