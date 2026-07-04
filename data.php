@@ -379,7 +379,7 @@ if ($lastWeekTotal > 0) {
         $insightMessage = "Your spending this week matches exactly with last week ({$thisWeekFormatted}).";
     }
 } elseif ($thisWeekTotal > 0 && $lastWeekTotal == 0) {
-    $insightMessage = "You started tracking new expenses this week! Total spent: <span class='fw-bold text-dark'>{$thisWeekFormatted}</span>.";
+    $insightMessage = "You started tracking new expenses this week! Total spent this week: <span class='fw-bold text-dark'>{$thisWeekFormatted}</span>.";
 } else {
     $insightMessage = "No expenses recorded in the last 14 days to analyze.";
 }
